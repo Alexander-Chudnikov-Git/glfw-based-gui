@@ -1,0 +1,1 @@
+add_library(glad STATIC glad.cpp glad.h khrplatform.h)
