@@ -18,4 +18,3 @@ add_subdirectory(window_handler)										# Add widnow_handler subdirectory in o
 target_include_directories(${PROJECT_NAME} PUBLIC window_handler/)		# Link include directory 
 target_link_directories(${PROJECT_NAME} PUBLIC window_handler/)			# Link directories for libraries
 target_link_libraries(${PROJECT_NAME} window_handler)					# Link libraries to the project
-# Ты пидор 
