@@ -37,6 +37,9 @@
 #include "cgui_datatypes/CGUIDataTypes.hpp"
 #include "shader_compiler/CGUIShaderCompiler.hpp"
 
+#include <sys/stat.h>
+#include <thread>
+
 /**
  * @brief      This class represents creation and handling of main window. 
  *             Class is based on GLFW and glad libraries, and uses them in oreder to create/handle/render window.
@@ -56,8 +59,10 @@ private:
     bool initialize(std::string main_window_name_arg = "CGUI Default Window", bool vertical_sync_arg = false, bool full_screen_arg = false);
     bool initialize_renderer();
     
-    void update_frame();
-    void render_frame();
+    void update_thread();
+    void render_frames();
+    void update_events();
+
 
     GLFWmonitor* get_monitor_by_cpos(CGUIPointd cursor_position);
 
@@ -70,6 +75,7 @@ private:
     static void cursor_enter_callback(GLFWwindow* window, int entered);
     static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
     static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+    static void frame_renderer_wrapper(GLFWwindow* window);
 
 private:
     CGUIDebugHandler debug_handler;
@@ -89,6 +95,10 @@ private:
     CGUIPointd last_mouse_press_position;
 
     CGUIShaderCompiler shaders;
+
+    std::thread* render_thread;
+
+    std::recursive_mutex thread_mutex;
 };
 
 #endif // CGUIMAINWINOW_HPP

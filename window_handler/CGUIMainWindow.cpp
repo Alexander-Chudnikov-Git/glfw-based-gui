@@ -53,10 +53,7 @@ CGUIMainWindow::CGUIMainWindow()
 
     debug_handler.post_log("Renderer has been initialized successfuly.", DEBUG_MODE_LOG);
 
-    while(!glfwWindowShouldClose(main_window))
-    {
-        update_frame();
-    }
+    update_thread();
 
     close();
 }
@@ -224,28 +221,59 @@ bool CGUIMainWindow::initialize_renderer()
 /**
  * @brief      Updates the frame.
  */
-void CGUIMainWindow::update_frame()
+void CGUIMainWindow::update_thread()
 {
-    render_frame();
-    glfwPollEvents();
+    render_thread = new std::thread(&CGUIMainWindow::frame_renderer_wrapper, main_window);
+
+    update_events();
+
+    render_thread->detach();
+
+    while (!glfwWindowShouldClose(main_window))
+    {
+        if (render_thread->joinable())
+        {
+            render_thread->join(); 
+        }
+    }
+    return;
 }
 
 /**
  * @brief      Renders the frame.
  */
-void CGUIMainWindow::render_frame()
+void CGUIMainWindow::render_frames()
 {
-    float framebuffer_ratio;
-    CGUIPointi framebuffer_size;
+    while(!glfwWindowShouldClose(main_window))
+    {
+        thread_mutex.lock();
+        float framebuffer_ratio;
+        CGUIPointi framebuffer_size;
 
-    glfwGetFramebufferSize(main_window, &framebuffer_size.x, &framebuffer_size.y);
-    framebuffer_ratio = framebuffer_size.x / (float) framebuffer_size.y;
+        glfwGetFramebufferSize(main_window, &framebuffer_size.x, &framebuffer_size.y);
+        framebuffer_ratio = framebuffer_size.x / (float) framebuffer_size.y;
 
-    glViewport(0, 0, framebuffer_size.x, framebuffer_size.y);
-    glClearColor((rand() % 100) / 100.0f, (rand() % 100) / 100.0f, (rand() % 100) / 100.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+        glViewport(0, 0, framebuffer_size.x, framebuffer_size.y);
+        glClearColor((rand() % 100) / 100.0f, (rand() % 100) / 100.0f, (rand() % 100) / 100.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
 
-    glfwSwapBuffers(main_window);
+        glfwSwapBuffers(main_window);
+        glfwPostEmptyEvent();
+        thread_mutex.unlock();
+    }
+    return;
+}
+
+/**
+ * @brief      Updates Pool Event function.
+ */
+void CGUIMainWindow::update_events()
+{
+    while(!glfwWindowShouldClose(main_window))
+    {
+        glfwWaitEvents();
+    }
+    return;
 }
 
 /**
@@ -491,5 +519,24 @@ void CGUIMainWindow::mouse_button_callback(GLFWwindow* window, int button, int a
  */
 void CGUIMainWindow::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
+    return;
+}
+
+void CGUIMainWindow::frame_renderer_wrapper(GLFWwindow* window)
+{
+    CGUIMainWindow* main_window_handler = reinterpret_cast<CGUIMainWindow*>(glfwGetWindowUserPointer(window));
+
+    glfwMakeContextCurrent(main_window_handler->main_window);
+
+    std::stringstream thread_id;
+    thread_id << std::this_thread::get_id();
+
+    main_window_handler->thread_mutex.lock();
+
+    main_window_handler->debug_handler.post_log(std::string("Renderer wrapper has been assigned to thread: ") + std::to_string(std::stoi(thread_id.str())), DEBUG_MODE_LOG);
+    
+    main_window_handler->thread_mutex.unlock();
+
+    main_window_handler->render_frames();
     return;
 }
