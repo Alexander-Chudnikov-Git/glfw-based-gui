@@ -522,6 +522,11 @@ void CGUIMainWindow::scroll_callback(GLFWwindow* window, double xoffset, double 
     return;
 }
 
+/**
+ * @brief      Frame renderer wrapper.
+ *
+ * @param      window    Window pointer.
+ */
 void CGUIMainWindow::frame_renderer_wrapper(GLFWwindow* window)
 {
     CGUIMainWindow* main_window_handler = reinterpret_cast<CGUIMainWindow*>(glfwGetWindowUserPointer(window));
