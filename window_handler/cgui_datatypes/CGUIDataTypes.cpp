@@ -306,7 +306,7 @@ bool operator==(CGUIPointi left_value, CGUIPointd right_value)
  */
 bool operator!=(CGUIPointi left_value, CGUIPointi right_value)
 {
-    return !(left_value == right_value);
+    return (left_value.x != right_value.x) || (left_value.y != right_value.y);
 }
 
 /**
@@ -319,7 +319,7 @@ bool operator!=(CGUIPointi left_value, CGUIPointi right_value)
  */
 bool operator!=(CGUIPointi left_value, CGUIPointd right_value)
 {
-    return !(left_value == right_value);
+    return (left_value.x != right_value.x) || (left_value.y != right_value.y);
 }
 
 /********************************************************************************
@@ -603,7 +603,7 @@ bool operator==(CGUIPointd left_value, CGUIPointd right_value)
  */
 bool operator!=(CGUIPointd left_value, CGUIPointi right_value)
 {
-    return !(left_value == right_value);
+    return (left_value.x != right_value.x) || (left_value.y != right_value.y);
 }
 
 /**
@@ -616,6 +616,6 @@ bool operator!=(CGUIPointd left_value, CGUIPointi right_value)
  */
 bool operator!=(CGUIPointd left_value, CGUIPointd right_value)
 {
-    return !(left_value == right_value);
+    return (left_value.x != right_value.x) || (left_value.y != right_value.y);
 }
 

@@ -71,7 +71,7 @@ CGUIMainWindow::~CGUIMainWindow()
  */
 void CGUIMainWindow::show()
 {
-
+    return;
 }
 
 /**
@@ -79,7 +79,7 @@ void CGUIMainWindow::show()
  */
 void CGUIMainWindow::hide()
 {
-
+    return;
 }
 
 /**
@@ -90,6 +90,7 @@ void CGUIMainWindow::close()
     debug_handler.post_log("Window has been closed.", DEBUG_MODE_LOG);
     glfwTerminate();
     exit(EXIT_SUCCESS);
+    return;
 }
 
 
@@ -100,7 +101,7 @@ void CGUIMainWindow::close()
 /**
  * @brief      Initializes window with given parameters.
  *
- * @param[opt] vertical_sync Vertical synchronization toggle.
+ * @param[opt] vertical_sync    Vertical synchronization toggle.
  * *
  * @return     Was initialization successfull or not.
  */
@@ -279,7 +280,7 @@ void CGUIMainWindow::update_events()
 /**
  * @brief      Gets the selected monitor.
  *
- * @return     Focused window pointer.
+ * @return     Focused  window pointer.
  */
 GLFWmonitor* CGUIMainWindow::get_monitor_by_cpos(CGUIPointd cursor_position)
 {
@@ -309,9 +310,9 @@ GLFWmonitor* CGUIMainWindow::get_monitor_by_cpos(CGUIPointd cursor_position)
 /**
  * @brief      Gets the global mouse position.
  *
- * @param      window  Window pointer.
+ * @param      window   Window pointer.
  *
- * @return     Global mouse position.
+ * @return     Global   mouse position.
  */
 CGUIPointd CGUIMainWindow::get_global_mouse_position(GLFWwindow* window)
 {
@@ -334,11 +335,11 @@ CGUIPointd CGUIMainWindow::get_global_mouse_position(GLFWwindow* window)
 /**
  * @brief      Key callback handler function.
  *
- * @param      window    Window pointer.
- * @param[in]  key       Key code.
- * @param[in]  scancode  Scancode.
- * @param[in]  action    Key action type.
- * @param[in]  mods      key action modifiers.
+ * @param      window   Window pointer.
+ * @param[in]  key      Key code.
+ * @param[in]  scancode Scancode.
+ * @param[in]  action   Key action type.
+ * @param[in]  mods     key action modifiers.
  */
 void CGUIMainWindow::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
@@ -394,8 +395,8 @@ void CGUIMainWindow::key_callback(GLFWwindow* window, int key, int scancode, int
 /**
  * @brief      Character callback for input fields.
  *
- * @param      window     Window pointer.
- * @param[in]  character  Character pressed.
+ * @param      window       Window pointer.
+ * @param[in]  character    Character pressed.
  */
 void CGUIMainWindow::character_callback(GLFWwindow* window, unsigned int character)
 {
@@ -429,10 +430,11 @@ void CGUIMainWindow::cursor_position_callback(GLFWwindow* window, double xpos, d
         {
             CGUIPointi window_position;
             glfwGetWindowPos(main_window_handler->main_window, &window_position.x, &window_position.y);
-            glfwSetWindowPos(main_window_handler->main_window, window_position.x + (new_mouse_press_position.x - main_window_handler->last_mouse_press_position.x), window_position.y + (new_mouse_press_position.y - main_window_handler->last_mouse_press_position.y));
+            glfwSetWindowPos(main_window_handler->main_window, window_position.x + (new_mouse_press_position.x - (int)main_window_handler->last_mouse_press_position.x), window_position.y + (new_mouse_press_position.y - (int)main_window_handler->last_mouse_press_position.y));
             main_window_handler->last_mouse_press_position = new_mouse_press_position;
         }
     }
+    return;
 }
 
 /**
@@ -443,16 +445,16 @@ void CGUIMainWindow::cursor_position_callback(GLFWwindow* window, double xpos, d
  */
 void CGUIMainWindow::cursor_enter_callback(GLFWwindow* window, int entered)
 {
-
+    return;
 }
 
 /**
  * @brief      Mouse button callback handler.
  *
- * @param      window  Window pointer.
- * @param[in]  button  Mouse button.
- * @param[in]  action  Mouse action type.
- * @param[in]  mods    Mouse action modifiers.
+ * @param      window   Window pointer.
+ * @param[in]  button   Mouse button.
+ * @param[in]  action   Mouse action type.
+ * @param[in]  mods     Mouse action modifiers.
  */
 void CGUIMainWindow::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
@@ -525,7 +527,7 @@ void CGUIMainWindow::scroll_callback(GLFWwindow* window, double xoffset, double 
 /**
  * @brief      Frame renderer wrapper.
  *
- * @param      window    Window pointer.
+ * @param      window   Window pointer.
  */
 void CGUIMainWindow::frame_renderer_wrapper(GLFWwindow* window)
 {
