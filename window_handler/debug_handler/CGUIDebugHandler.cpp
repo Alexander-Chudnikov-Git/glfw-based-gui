@@ -14,7 +14,7 @@
  * 
  *             In order to submit new ones, please contact me via bug-report@choodick.com.
  * 
- * @copyright  Copyright 2022 Alexande. All rights reserved. 
+ * @copyright  Copyright 2022 Alexander. All rights reserved. 
  * 
  *             (Not really)
  * 

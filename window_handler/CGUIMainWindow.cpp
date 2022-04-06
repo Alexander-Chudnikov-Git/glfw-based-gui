@@ -14,7 +14,7 @@
  * 
  *             In order to submit new ones, please contact me via bug-report@choodick.com.
  * 
- * @copyright  Copyright 2022 Alexande. All rights reserved. 
+ * @copyright  Copyright 2022 Alexander. All rights reserved. 
  * 
  *             (Not really)
  * 
@@ -323,7 +323,7 @@ CGUIPointd CGUIMainWindow::get_global_mouse_position(GLFWwindow* window)
 
     cursor_position += window_position;  
 
-    debug_handler.post_log(std::string("Global mouse position: x-") + std::to_string(cursor_position.x) + std::string(" y-") + std::to_string(cursor_position.y), DEBUG_MODE_LOG);
+    //debug_handler.post_log(std::string("Global mouse position: x-") + std::to_string(cursor_position.x) + std::string(" y-") + std::to_string(cursor_position.y), DEBUG_MODE_LOG);
 
     return cursor_position;
 }
