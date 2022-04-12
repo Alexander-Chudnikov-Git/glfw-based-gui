@@ -424,14 +424,13 @@ void CGUIMainWindow::cursor_position_callback(GLFWwindow* window, double xpos, d
     CGUIMainWindow* main_window_handler = reinterpret_cast<CGUIMainWindow*>(glfwGetWindowUserPointer(window));
     if (main_window_handler->mouse_lb_pressed)
     {
-        CGUIPointd new_mouse_press_position = main_window_handler->get_global_mouse_position(window);
+        CGUIPointd new_mouse_press_position = {xpos, ypos};
 
         if (new_mouse_press_position != main_window_handler->last_mouse_press_position)
         {
             CGUIPointi window_position;
             glfwGetWindowPos(main_window_handler->main_window, &window_position.x, &window_position.y);
             glfwSetWindowPos(main_window_handler->main_window, window_position.x + (new_mouse_press_position.x - (int)main_window_handler->last_mouse_press_position.x), window_position.y + (new_mouse_press_position.y - (int)main_window_handler->last_mouse_press_position.y));
-            main_window_handler->last_mouse_press_position = new_mouse_press_position;
         }
     }
     return;
@@ -469,7 +468,8 @@ void CGUIMainWindow::mouse_button_callback(GLFWwindow* window, int button, int a
                 {
                     main_window_handler->mouse_lb_pressed = true;
 
-                    CGUIPointd new_mouse_press_position = main_window_handler->get_global_mouse_position(window);
+                    CGUIPointd new_mouse_press_position;
+                    glfwGetCursorPos(window, &new_mouse_press_position.x, &new_mouse_press_position.y);
                     main_window_handler->last_mouse_press_position = new_mouse_press_position;
 
                     main_window_handler->debug_handler.post_log("Left button has been pressed.", DEBUG_MODE_LOG);
