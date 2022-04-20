@@ -43,7 +43,7 @@ CGUIMainWindow::CGUIMainWindow()
         close();
     }
 
-    debug_handler.post_log("CGUI has been initialized successfuly.", DEBUG_MODE_LOG);
+    debug_handler.post_log("CGUI has been initialized successfully.", DEBUG_MODE_LOG);
 
     if (!initialize_renderer())
     {
@@ -51,7 +51,7 @@ CGUIMainWindow::CGUIMainWindow()
         close();
     }
 
-    debug_handler.post_log("Renderer has been initialized successfuly.", DEBUG_MODE_LOG);
+    debug_handler.post_log("Renderer has been initialized successfully.", DEBUG_MODE_LOG);
 
     update_thread();
 
@@ -103,7 +103,7 @@ void CGUIMainWindow::close()
  *
  * @param[opt] vertical_sync    Vertical synchronization toggle.
  * *
- * @return     Was initialization successfull or not.
+ * @return     Was initialization successful or not.
  */
 bool CGUIMainWindow::initialize(std::string main_window_name_arg, bool vertical_sync_arg, bool full_screen_arg)
 {
@@ -216,6 +216,10 @@ bool CGUIMainWindow::initialize(std::string main_window_name_arg, bool vertical_
  */
 bool CGUIMainWindow::initialize_renderer()
 {
+    shaders = new CGUIShaderCompiler(CGUI_SHADER_TRIANDLE, triangle_vertext_file_path, triangle_fragment_file_path, triangle_geometry_file_path);
+
+    // ... VBO impl
+
     return true;
 }
 
@@ -335,13 +339,13 @@ CGUIPointd CGUIMainWindow::get_global_mouse_position(GLFWwindow* window)
 /**
  * @brief      Key callback handler function.
  *
- * @param      window   Window pointer.
- * @param[in]  key      Key code.
- * @param[in]  scancode Scancode.
- * @param[in]  action   Key action type.
- * @param[in]  mods     key action modifiers.
+ * @param      window       Window pointer.
+ * @param[in]  key          Key code.
+ * @param[in]  scan_code    Scan code.
+ * @param[in]  action       Key action type.
+ * @param[in]  mods         key action modifiers.
  */
-void CGUIMainWindow::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+void CGUIMainWindow::key_callback(GLFWwindow* window, int key, int scan_code, int action, int mods)
 {
     CGUIMainWindow* main_window_handler = reinterpret_cast<CGUIMainWindow*>(glfwGetWindowUserPointer(window));
     switch (action)

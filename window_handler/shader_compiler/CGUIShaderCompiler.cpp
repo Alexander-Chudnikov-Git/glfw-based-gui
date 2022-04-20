@@ -121,10 +121,13 @@ GLuint CGUIShaderCompiler::compile_shader(const std::string& vertex_shader, cons
 
     check_for_errors(id, "PROGRAM");
 
+    glDetachShader(id, compiled_vertex);
     glDeleteShader(compiled_vertex);
+    glDetachShader(id, compiled_fragment);
     glDeleteShader(compiled_fragment);
     if (std::strcmp(geometry_shader.c_str(), "NONE") != 0)
     {
+        glDetachShader(id, compiled_geometry);
         glDeleteShader(compiled_geometry);
     }
 

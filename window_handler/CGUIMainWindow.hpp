@@ -25,20 +25,26 @@
 #ifndef CGUIMAINWINOW_HPP
 #define CGUIMAINWINOW_HPP
 
-/**<
- * Include GLFW and GLAD for window handling.
+/**
+ * Include some important headers.
  */
-#include "glad/glad.h"
-#include "glfw/include/GLFW/glfw3.h"
 #include "glm/glm/glm.hpp"
 #include "glm/glm/gtc/matrix_transform.hpp"
 
 #include "debug_handler/CGUIDebugHandler.hpp"
 #include "cgui_datatypes/CGUIDataTypes.hpp"
 #include "shader_compiler/CGUIShaderCompiler.hpp"
+#include "vertex_specification/vbo_handler/CGUIVBOHandler.hpp"
+#include "vertex_specification/vao_handler/CGUIVAOHandler.hpp"
+#include "vertex_specification/ebo_handler/CGUIEBOHandler.hpp"
 
 #include <sys/stat.h>
 #include <thread>
+
+/**
+ * Some usefull defines for shader compiler.
+ */
+#define CGUI_SHADER_TRIANDLE "CGUI_SHADER_TRIANDLE"
 
 /**
  * @brief      This class represents creation and handling of main window. 
@@ -69,7 +75,7 @@ private:
     CGUIPointd get_global_mouse_position(GLFWwindow* window);
 
 private:
-    static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+    static void key_callback(GLFWwindow* window, int key, int scan_code, int action, int mods);
     static void character_callback(GLFWwindow* window, unsigned int character);
     static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
     static void cursor_enter_callback(GLFWwindow* window, int entered);
@@ -89,12 +95,16 @@ private:
     bool full_screen;
     bool vertical_sync;
 
-    bool character_mode = false;
-    bool mouse_lb_pressed = false;
+    bool character_mode     = false;
+    bool mouse_lb_pressed   = false;
 
     CGUIPointd last_mouse_press_position;
 
-    CGUIShaderCompiler shaders;
+    CGUIShaderCompiler* shaders;
+
+    fs::path triangle_vertext_file_path     = "./cgui_tri_vert.vs";
+    fs::path triangle_fragment_file_path    = "./cgui_tri_frag.fs";
+    fs::path triangle_geometry_file_path    = "";                   // ./cgui_tri_geom.gs
 
     std::thread* render_thread;
 
