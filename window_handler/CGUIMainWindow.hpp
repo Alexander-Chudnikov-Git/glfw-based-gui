@@ -69,6 +69,7 @@ private:
     void update_thread();
     void render_frames();
     void update_events();
+    void frame_renderer_wrapper();
 
 
     GLFWmonitor* get_monitor_by_cpos(CGUIPointd cursor_position);
@@ -82,7 +83,7 @@ private:
     static void cursor_enter_callback(GLFWwindow* window, int entered);
     static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
     static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-    static void frame_renderer_wrapper(GLFWwindow* window);
+    static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
 private:
     CGUIDebugHandler debug_handler;
