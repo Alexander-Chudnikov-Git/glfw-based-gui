@@ -63,10 +63,10 @@ CGUIDebugHandler::CGUIDebugHandler(bool clear_base_dir, std::string full_file_pa
     }
 
     struct stat debug_buffer;   
-    if (stat(debug_file_path.c_str(), &debug_buffer) != 0)
+    if (stat(debug_file_path.string().c_str(), &debug_buffer) != 0)
     {
 
-        debug_file_out.open(debug_file_path.c_str(), std::ios::app);
+        debug_file_out.open(debug_file_path.string().c_str(), std::ios::app);
         if(!debug_file_out.good())
         {
             std::cerr << "Unable to initialize debug handler with this name : " << debug_file_path;
@@ -88,7 +88,7 @@ CGUIDebugHandler::CGUIDebugHandler(bool clear_base_dir, std::string full_file_pa
 CGUIDebugHandler::CGUIDebugHandler(const CGUIDebugHandler& debug_handler)
 {
     
-    CGUIDebugHandler(false, debug_handler.debug_file_path.c_str());
+    CGUIDebugHandler(false, debug_handler.debug_file_path.string().c_str());
 }
 
 /**
@@ -176,7 +176,7 @@ void CGUIDebugHandler::post_log(std::wstring message, size_t mode)
     std::time_t time_current = std::time(0);
     std::tm* time_struct = std::localtime(&time_current);
 
-    debug_file_out.open(debug_file_path.c_str(), std::ios::app);
+    debug_file_out.open(debug_file_path.string().c_str(), std::ios::app);
     debug_file_out << std::setw(24) << std::left << str_to_wstr("[" + fill_zeros(time_struct->tm_year + 1900, 4) + "-" + fill_zeros(time_struct->tm_mon + 1, 2) + "-" +  fill_zeros(time_struct->tm_mday, 2) + "-" + fill_zeros(time_struct->tm_hour, 2) + "-" + fill_zeros(time_struct->tm_min, 2) + "-" +  fill_zeros(time_struct->tm_sec, 2) + "]") << std::setw(14) << std::left << error_tag << L" " << message << L"\n";
     debug_file_out.close();
 }

@@ -40,6 +40,7 @@
 
 #include <sys/stat.h>
 #include <thread>
+#include <mutex>
 
 /**
  * Some usefull defines for shader compiler.

@@ -36,6 +36,7 @@
 #include "../debug_handler/CGUIDebugHandler.hpp"
 
 #include <unordered_map>
+#include <cstring>
 
 class CGUIShaderCompiler
 {
