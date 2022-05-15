@@ -128,10 +128,10 @@ bool CGUIMainWindow::initialize(std::string main_window_name_arg, bool vertical_
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     #if defined(__APPLE__)
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
         glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_TRUE);
         glfwWindowHint(GLFW_COCOA_GRAPHICS_SWITCHING, GLFW_TRUE);
         glfwWindowHintString(GLFW_COCOA_FRAME_NAME, "CGUI Autosaved Frame");
@@ -175,6 +175,12 @@ bool CGUIMainWindow::initialize(std::string main_window_name_arg, bool vertical_
         main_window = glfwCreateWindow(512, 256, main_window_name.c_str(), NULL, NULL);
     }
 
+    if (main_window == NULL)
+    {
+        debug_handler.post_log("Unable to properly create window.", DEBUG_MODE_ERROR);
+        return false;
+    }
+
     glfwShowWindow(main_window);
 
     glfwSetWindowShouldClose(main_window, GLFW_FALSE);
@@ -191,11 +197,12 @@ bool CGUIMainWindow::initialize(std::string main_window_name_arg, bool vertical_
     glfwSetCursorEnterCallback(main_window, cursor_enter_callback);
     glfwSetMouseButtonCallback(main_window, mouse_button_callback);
     glfwSetScrollCallback(main_window, scroll_callback);
+    glfwSetFramebufferSizeCallback(main_window, framebuffer_size_callback);  
 
     debug_handler.post_log("Callback have been initialized.", DEBUG_MODE_LOG);
 
     glfwMakeContextCurrent(main_window);
-    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress))
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         debug_handler.post_log("Unable to properly initialize GLAD.", DEBUG_MODE_ERROR);
         return false;
@@ -228,11 +235,13 @@ bool CGUIMainWindow::initialize_renderer()
  */
 void CGUIMainWindow::update_thread()
 {
-    render_thread = new std::thread(&CGUIMainWindow::frame_renderer_wrapper, main_window);
+    // Set GLFW context to NULL in order to render window in separate thread 
+    glfwMakeContextCurrent(NULL);
 
-    update_events();
-
+    render_thread = new std::thread(&CGUIMainWindow::frame_renderer_wrapper, this);
     render_thread->detach();
+    
+    update_events();
 
     while (!glfwWindowShouldClose(main_window))
     {
@@ -274,7 +283,7 @@ void CGUIMainWindow::render_frames()
  */
 void CGUIMainWindow::update_events()
 {
-    while(!glfwWindowShouldClose(main_window))
+    while (!glfwWindowShouldClose(main_window))
     {
         glfwWaitEvents();
     }
@@ -529,25 +538,33 @@ void CGUIMainWindow::scroll_callback(GLFWwindow* window, double xoffset, double 
 }
 
 /**
- * @brief      Frame renderer wrapper.
- *
+ * @brief      Framebuffer resize handler.
+ * 
  * @param      window   Window pointer.
+ * @param[in]  width    Framebuffer width.
+ * @param[in]  height   Framebuffer height.
  */
-void CGUIMainWindow::frame_renderer_wrapper(GLFWwindow* window)
+void CGUIMainWindow::framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-    CGUIMainWindow* main_window_handler = reinterpret_cast<CGUIMainWindow*>(glfwGetWindowUserPointer(window));
+    glViewport(0, 0, width, height);
+}  
 
-    glfwMakeContextCurrent(main_window_handler->main_window);
+/**
+ * @brief      Frame renderer wrapper.
+ */
+void CGUIMainWindow::frame_renderer_wrapper()
+{
+    glfwMakeContextCurrent(this->main_window);
 
     std::stringstream thread_id;
     thread_id << std::this_thread::get_id();
 
-    main_window_handler->thread_mutex.lock();
+    this->thread_mutex.lock();
 
-    main_window_handler->debug_handler.post_log(std::string("Renderer wrapper has been assigned to thread: ") + std::to_string(std::stoi(thread_id.str())), DEBUG_MODE_LOG);
+    this->debug_handler.post_log(std::string("Renderer wrapper has been assigned to thread: ") + std::to_string(std::stoi(thread_id.str())), DEBUG_MODE_LOG);
     
-    main_window_handler->thread_mutex.unlock();
+    this->thread_mutex.unlock();
 
-    main_window_handler->render_frames();
+    this->render_frames();
     return;
 }
