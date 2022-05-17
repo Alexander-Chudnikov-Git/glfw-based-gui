@@ -37,6 +37,7 @@
  */
 CGUIMainWindow::CGUIMainWindow()
 {
+    debug_handler = CGUIDebugHandler(main_debug_handler);
 	if (!initialize())
     {
         debug_handler.post_log("Unable to initialize CGUI.", DEBUG_MODE_ERROR);
@@ -52,6 +53,8 @@ CGUIMainWindow::CGUIMainWindow()
     }
 
     debug_handler.post_log("Renderer has been initialized successfully.", DEBUG_MODE_LOG);
+
+    CGUIShaderCompiler tesm;
 
     update_thread();
 

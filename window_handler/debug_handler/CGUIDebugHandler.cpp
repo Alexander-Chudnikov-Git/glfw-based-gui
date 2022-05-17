@@ -27,13 +27,14 @@
 #include <iostream>
 #include <streambuf>
 
+CGUIDebugHandler main_debug_handler = CGUIDebugHandler();
+
 /**
  * @brief      Constructs debug handler instance.
  * 
  * @param[opt]  clear_base_dir  Flag for removal of old log files.
  * @param[opt]  full_file_path  Full file path to debug log.
  */
-
 CGUIDebugHandler::CGUIDebugHandler(bool clear_base_dir, std::string full_file_path) 
 {
     if (full_file_path != "") 
@@ -87,8 +88,24 @@ CGUIDebugHandler::CGUIDebugHandler(bool clear_base_dir, std::string full_file_pa
  */
 CGUIDebugHandler::CGUIDebugHandler(const CGUIDebugHandler& debug_handler)
 {
-    
-    CGUIDebugHandler(false, debug_handler.debug_file_path.string().c_str());
+    debug_file_path = debug_handler.debug_file_path;
+    debug_disabled = debug_handler.debug_disabled;
+    struct stat debug_buffer;   
+    if (stat(debug_file_path.string().c_str(), &debug_buffer) != 0)
+    {
+
+        debug_file_out.open(debug_file_path.string().c_str(), std::ios::app);
+        if(!debug_file_out.good())
+        {
+            std::cerr << "Unable to initialize debug handler with this name : " << debug_file_path;
+        }
+        else 
+        {
+            debug_disabled = false;
+            debug_file_out << "[LOADER DEBUG LOG]" << "\n";
+            debug_file_out.close();
+        }
+    }
 }
 
 /**

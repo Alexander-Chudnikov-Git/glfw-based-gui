@@ -66,6 +66,7 @@
 // Headers for time 
 #include <ctime>
 
+
 #ifdef __APPLE__
     //#include <CoreFoundation/CoreFoundation.h>
     namespace fs = std::__fs::filesystem;
@@ -110,5 +111,7 @@ private:
     bool debug_disabled = true;
     
 };
+
+extern CGUIDebugHandler main_debug_handler;
 
 #endif // CGUIDEBUGHANDLER_HPP

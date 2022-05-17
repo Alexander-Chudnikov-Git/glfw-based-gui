@@ -104,9 +104,9 @@ private:
 
     CGUIShaderCompiler* shaders;
 
-    fs::path triangle_vertext_file_path     = "./cgui_tri_vert.vs";
-    fs::path triangle_fragment_file_path    = "./cgui_tri_frag.fs";
-    fs::path triangle_geometry_file_path    = "";                   // ./cgui_tri_geom.gs
+    fs::path triangle_vertext_file_path     = "cgui_tri_vert.vs";
+    fs::path triangle_fragment_file_path    = "cgui_tri_frag.fs";
+    fs::path triangle_geometry_file_path    = "";                    // cgui_tri_geom.gs
 
     std::thread* render_thread;
 

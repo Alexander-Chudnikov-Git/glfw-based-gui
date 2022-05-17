@@ -37,6 +37,7 @@
 
 #include <unordered_map>
 #include <cstring>
+#include <vector>
 
 class CGUIShaderCompiler
 {
@@ -60,7 +61,7 @@ public:
 private:
     std::unordered_map<std::string, GLuint> shader_list;
 
-    CGUIDebugHandler *debug_handler;
+    CGUIDebugHandler debug_handler = CGUIDebugHandler(false);
 };
 
 #endif //CGUISHADERCOMPILER_HPP
