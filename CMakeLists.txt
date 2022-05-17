@@ -5,8 +5,46 @@ project(glfw-based-gui)													# Set name to the project
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)										# Set c++ standart to 20
 
+set(ICON_NAME "icon.icns")
+set(ICON_PATH ${PROJECT_SOURCE_DIR}/resources/${ICON_NAME})
+
+set(VS_SHADER_NAME "cgui_tri_vert.vs")
+set(VS_SHADER_PATH ${PROJECT_SOURCE_DIR}/resources/${VS_SHADER_NAME})
+
+set(FS_SHADER_NAME "cgui_tri_frag.fs")
+set(FS_SHADER_PATH ${PROJECT_SOURCE_DIR}/resources/${FS_SHADER_NAME})
+
+set(GS_SHADER_NAME "cgui_tri_geom.gs")
+set(GS_SHADER_PATH ${PROJECT_SOURCE_DIR}/resources/${GS_SHADER_NAME})
+
+if(MSVC)
+  	if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
+    	string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+  	else()
+    	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+  	endif()
+elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+  	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -pedantic")
+endif()
+
+
 if (APPLE)
-  	add_executable(${PROJECT_NAME} MACOSX_BUNDLE main.cpp)				# Create executable with the name of a project add MACOSX_BUNDLE
+
+	set_source_files_properties(${ICON_PATH} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+	file(COPY ${ICON_PATH} DESTINATION "${PROJECT_NAME}.app/Contents/Resources")
+	file(COPY ${VS_SHADER_PATH} DESTINATION "${PROJECT_NAME}.app/Contents/Resources")
+	file(COPY ${FS_SHADER_PATH} DESTINATION "${PROJECT_NAME}.app/Contents/Resources")
+	file(COPY ${GS_SHADER_PATH} DESTINATION "${PROJECT_NAME}.app/Contents/Resources")
+
+  	add_executable(${PROJECT_NAME} MACOSX_BUNDLE ${ICON_PATH} main.cpp)				# Create executable with the name of a project add MACOSX_BUNDLE
+  	set_target_properties(${PROJECT_NAME} PROPERTIES
+    BUNDLE True
+    MACOSX_BUNDLE_GUI_IDENTIFIER choodick.com.${PROJECT_NAME}
+    MACOSX_BUNDLE_BUNDLE_NAME ${PROJECT_NAME}
+    MACOSX_BUNDLE_BUNDLE_VERSION "0.1"
+    MACOSX_BUNDLE_SHORT_VERSION_STRING "0.1"
+    MACOSX_BUNDLE_ICONFILE ${ICON_NAME}
+)
 endif()
 
 if (WIN32)
