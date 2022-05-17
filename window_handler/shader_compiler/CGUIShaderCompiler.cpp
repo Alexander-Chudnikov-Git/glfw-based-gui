@@ -80,9 +80,9 @@ GLuint CGUIShaderCompiler::compile_shader(const std::string& vertex_shader, cons
     GLuint compiled_fragment;
     GLuint compiled_geometry;
 
-    debug_handler.post_log(std::string(vertex_shader.begin(), vertex_shader.end()));
-    debug_handler.post_log(std::string(fragment_shader.begin(), fragment_shader.end()));
-    debug_handler.post_log(std::string(geometry_shader.begin(), geometry_shader.end()));
+    // debug_handler.post_log("\n" + std::string(vertex_shader.begin(), vertex_shader.end()));
+    // debug_handler.post_log("\n" + std::string(fragment_shader.begin(), fragment_shader.end()));
+    // debug_handler.post_log("\n" + std::string(geometry_shader.begin(), geometry_shader.end()));
 
     GLuint id = glCreateProgram();
 
@@ -320,7 +320,7 @@ bool CGUIShaderCompiler::check_for_errors(GLuint shader_id, std::string shader_t
     {
         debug_handler.post_log(std::string("Shader is being checked: ") + std::to_string(shader_id), DEBUG_MODE_LOG);
         glGetShaderiv(shader_id, GL_COMPILE_STATUS, &success);
-        if(!success)
+        if(success == GL_FALSE)
         {
             debug_handler.post_log(std::string("Unable to compile shader id: ") + std::to_string(shader_id) + std::string(" - ") + shader_type, DEBUG_MODE_ERROR);
             glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &success);
@@ -334,7 +334,7 @@ bool CGUIShaderCompiler::check_for_errors(GLuint shader_id, std::string shader_t
     else
     {
         glGetProgramiv(shader_id, GL_LINK_STATUS, &success);
-        if(!success)
+        if(success == GL_FALSE)
         {
             debug_handler.post_log(std::string("Unable to link program id: ") + std::to_string(shader_id) + std::string(" - ") + shader_type, DEBUG_MODE_ERROR);
             glGetProgramiv(shader_id, GL_INFO_LOG_LENGTH, &success);
