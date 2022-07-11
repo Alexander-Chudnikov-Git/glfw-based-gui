@@ -32,13 +32,13 @@
 #include "glm/glm/gtc/matrix_transform.hpp"
 
 #include "debug_handler/CGUIDebugHandler.hpp"
-#include "cgui_datatypes/CGUIDataTypes.hpp"
 #include "shader_compiler/CGUIShaderCompiler.hpp"
 #include "vertex_specification/vbo_handler/CGUIVBOHandler.hpp"
 #include "vertex_specification/vao_handler/CGUIVAOHandler.hpp"
 #include "vertex_specification/ebo_handler/CGUIEBOHandler.hpp"
 
 #include <sys/stat.h>
+#include <chrono>
 #include <thread>
 #include <mutex>
 
@@ -70,11 +70,14 @@ private:
     void render_frames();
     void update_events();
     void frame_renderer_wrapper();
+    void set_fullscreen_mode();
+    void set_windowed_mode();
+    void switch_window_mode();
 
 
-    GLFWmonitor* get_monitor_by_cpos(CGUIPointd cursor_position);
+    GLFWmonitor* get_monitor_by_cpos(glm::dvec2 cursor_position);
 
-    CGUIPointd get_global_mouse_position(GLFWwindow* window);
+    glm::dvec2 get_global_mouse_position(GLFWwindow* window);
 
 private:
     static void key_callback(GLFWwindow* window, int key, int scan_code, int action, int mods);
@@ -91,6 +94,8 @@ private:
     GLFWwindow*     main_window;
     GLFWmonitor*    current_monitor;
 
+    CGUIShaderCompiler* shaders;
+
 private:
     std::string main_window_name;
 
@@ -100,9 +105,16 @@ private:
     bool character_mode     = false;
     bool mouse_lb_pressed   = false;
 
-    CGUIPointd last_mouse_press_position;
+    std::chrono::time_point<std::chrono::steady_clock> program_start_time;
+    std::chrono::time_point<std::chrono::steady_clock> last_lb_press_time;
 
-    CGUIShaderCompiler* shaders;
+    size_t last_frame_render_time = 0;
+    size_t last_frames_rendered_per_second = 0;
+
+    glm::dvec2 last_mouse_press_position;
+
+    glm::ivec2 last_window_size     = {512, 256};
+    glm::ivec2 last_window_position = {0, 0};
 
     fs::path triangle_vertext_file_path     = "cgui_tri_vert.vs";
     fs::path triangle_fragment_file_path    = "cgui_tri_frag.fs";

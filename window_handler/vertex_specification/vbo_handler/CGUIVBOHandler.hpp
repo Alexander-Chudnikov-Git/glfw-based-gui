@@ -30,10 +30,29 @@
  */
 #include "../../glad/glad.h"
 #include "../../glfw/include/GLFW/glfw3.h"
+#include "../../glm/glm/glm.hpp"
+
+
+/**
+ * Standart vretex, that is being used universaly.
+ */
+struct CGUIVertex
+{
+    glm::vec3 position;
+    glm::vec3 normal;
+    glm::vec4 color;
+    glm::vec2 tx_position;
+};
+
 
 class CGUIVBO 
 {
-    
+public:
+    CGUIVBO(bool buffer_static = false); 
+    CGUIVBO(const CGUIVBO&) = delete;
+    ~CGUIVBO();
+
+
 };
 
 #endif // CGUIVBOHANDLER_HPP

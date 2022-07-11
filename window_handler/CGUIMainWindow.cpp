@@ -37,6 +37,7 @@
  */
 CGUIMainWindow::CGUIMainWindow()
 {
+    program_start_time = std::chrono::steady_clock::now();
     debug_handler = CGUIDebugHandler(main_debug_handler);
 	if (!initialize())
     {
@@ -153,29 +154,24 @@ bool CGUIMainWindow::initialize(std::string main_window_name_arg, bool vertical_
 
     debug_handler.post_log("Window hints have been set.", DEBUG_MODE_LOG);
 
+    main_window = glfwCreateWindow(last_window_size.x, last_window_size.y, main_window_name.c_str(), NULL, NULL);
+
+    current_monitor = get_monitor_by_cpos(get_global_mouse_position(main_window));
+
+    const GLFWvidmode* monitor_video_mode = glfwGetVideoMode(current_monitor);
+
+    last_window_position = {(monitor_video_mode->width - last_window_size.x) / 2, (monitor_video_mode->height - last_window_size.y) / 2};
+
     // Create invisible window in order to get mouse position
     if (full_screen)
     {
         debug_handler.post_log("Full screen window is being created.", DEBUG_MODE_LOG);
-
-        current_monitor = glfwGetPrimaryMonitor();
-        main_window = glfwCreateWindow(100, 100, main_window_name.c_str(), current_monitor, NULL);
-
-        debug_handler.post_log("Temporary window created.", DEBUG_MODE_LOG);
-        
-        current_monitor = get_monitor_by_cpos(get_global_mouse_position(main_window));
-
-        debug_handler.post_log(std::string("Current monitor is: ") + glfwGetMonitorName(current_monitor), DEBUG_MODE_LOG);
-
-        const GLFWvidmode* monitor_video_mode = glfwGetVideoMode(current_monitor);
-        CGUIPointi window_size = {512, 256};
-
-        glfwSetWindowMonitor(main_window, current_monitor, (monitor_video_mode->width - window_size.x) / 2, (monitor_video_mode->height - window_size.y) / 2, window_size.x, window_size.y, monitor_video_mode->refreshRate);
+        set_fullscreen_mode();
     }
     else 
     {
         debug_handler.post_log("Normal window is being created.", DEBUG_MODE_LOG);
-        main_window = glfwCreateWindow(512, 256, main_window_name.c_str(), NULL, NULL);
+        set_windowed_mode();
     }
 
     if (main_window == NULL)
@@ -261,11 +257,17 @@ void CGUIMainWindow::update_thread()
  */
 void CGUIMainWindow::render_frames()
 {
+    std::chrono::time_point<std::chrono::steady_clock> last_second_time_interval = std::chrono::steady_clock::now();
+    std::chrono::time_point<std::chrono::steady_clock> last_frame_render_time_start = std::chrono::steady_clock::now();
+    std::chrono::time_point<std::chrono::steady_clock> last_frame_render_time_end = std::chrono::steady_clock::now();
+    size_t frame_counter = 0;
+
     while(!glfwWindowShouldClose(main_window))
     {
+        last_frame_render_time_start = std::chrono::steady_clock::now();
         thread_mutex.lock();
         float framebuffer_ratio;
-        CGUIPointi framebuffer_size;
+        glm::ivec2 framebuffer_size;
 
         glfwGetFramebufferSize(main_window, &framebuffer_size.x, &framebuffer_size.y);
         framebuffer_ratio = framebuffer_size.x / (float) framebuffer_size.y;
@@ -277,6 +279,17 @@ void CGUIMainWindow::render_frames()
         glfwSwapBuffers(main_window);
         glfwPostEmptyEvent();
         thread_mutex.unlock();
+
+        last_frame_render_time_end = std::chrono::steady_clock::now();
+        last_frame_render_time = std::chrono::duration_cast<std::chrono::milliseconds>(last_frame_render_time_end - last_frame_render_time_start).count();
+
+        if (std::chrono::duration_cast<std::chrono::milliseconds>(last_frame_render_time_end - last_second_time_interval).count() > 1000)
+        {
+            last_second_time_interval = last_frame_render_time_end;
+            last_frames_rendered_per_second = frame_counter;
+            frame_counter = 0;
+        }
+        frame_counter++;
     }
     return;
 }
@@ -294,20 +307,90 @@ void CGUIMainWindow::update_events()
 }
 
 /**
+ * @brief      Frame renderer wrapper.
+ */
+void CGUIMainWindow::frame_renderer_wrapper()
+{
+    glfwMakeContextCurrent(this->main_window);
+
+    std::stringstream thread_id;
+    thread_id << std::this_thread::get_id();
+
+    this->thread_mutex.lock();
+
+    this->debug_handler.post_log(std::string("Renderer wrapper has been assigned to thread: ") + std::to_string(std::stoi(thread_id.str())), DEBUG_MODE_LOG);
+    
+    this->thread_mutex.unlock();
+
+    this->render_frames();
+    return;
+}
+
+/**
+ * @brief      Switches widnow mode to fullscreen
+ */
+void CGUIMainWindow::set_fullscreen_mode()
+{
+    glfwGetWindowSize(main_window, &last_window_size.x, &last_window_size.y);
+    glfwGetWindowPos(main_window, &last_window_position.x, &last_window_position.y);
+    debug_handler.post_log("Window mode has been set to fullscreen.", DEBUG_MODE_LOG);
+    full_screen = true;
+
+    current_monitor = get_monitor_by_cpos(get_global_mouse_position(main_window));
+
+    const GLFWvidmode* monitor_video_mode = glfwGetVideoMode(current_monitor);
+
+    glfwSetWindowMonitor(main_window, current_monitor, 0, 0, monitor_video_mode->width, monitor_video_mode->height, monitor_video_mode->refreshRate);
+}
+
+/**
+ * @brief      Switches widnow mode to windowed
+ */
+void CGUIMainWindow::set_windowed_mode()
+{   
+    glfwHideWindow(main_window);
+    debug_handler.post_log("Window mode has been set to windowed.", DEBUG_MODE_LOG);
+    full_screen = false;
+
+    current_monitor = get_monitor_by_cpos(get_global_mouse_position(main_window));
+
+    const GLFWvidmode* monitor_video_mode = glfwGetVideoMode(current_monitor);
+
+    glfwSetWindowMonitor(main_window, NULL, last_window_position.x, last_window_position.y, last_window_size.x, last_window_size.y, GLFW_DONT_CARE);
+    //glfwSetWindowAttrib(main_window, GLFW_DECORATED, GLFW_FALSE);
+    glfwShowWindow(main_window);
+}
+
+/**
+ * @brief      Switches widnow mode
+ */
+void CGUIMainWindow::switch_window_mode()
+{
+    if (!full_screen)
+    {
+        set_fullscreen_mode();
+    }
+    else 
+    {
+        set_windowed_mode();
+    }
+}
+
+/**
  * @brief      Gets the selected monitor.
  *
  * @return     Focused  window pointer.
  */
-GLFWmonitor* CGUIMainWindow::get_monitor_by_cpos(CGUIPointd cursor_position)
+GLFWmonitor* CGUIMainWindow::get_monitor_by_cpos(glm::dvec2 cursor_position)
 {
     int monitor_count;
     GLFWmonitor** monitors = glfwGetMonitors(&monitor_count);
     for (int current_monitor = 0; current_monitor < monitor_count; ++current_monitor)
     {   
-        CGUIPointi monitor_position;
+        glm::ivec2 monitor_position;
         glfwGetMonitorPos(monitors[current_monitor], &monitor_position.x, &monitor_position.y);
 
-        debug_handler.post_log(std::string("Monitor: ") + glfwGetMonitorName(monitors[current_monitor]) + std::string(" position: x-") + std::to_string(cursor_position.x) + std::string(" y-") + std::to_string(cursor_position.y), DEBUG_MODE_LOG);
+        //debug_handler.post_log(std::string("Monitor: ") + glfwGetMonitorName(monitors[current_monitor]) + std::string(" position: x-") + std::to_string(cursor_position.x) + std::string(" y-") + std::to_string(cursor_position.y), DEBUG_MODE_LOG);
 
         const GLFWvidmode* monitor_video_mode = glfwGetVideoMode(monitors[current_monitor]);
         if (
@@ -330,10 +413,10 @@ GLFWmonitor* CGUIMainWindow::get_monitor_by_cpos(CGUIPointd cursor_position)
  *
  * @return     Global   mouse position.
  */
-CGUIPointd CGUIMainWindow::get_global_mouse_position(GLFWwindow* window)
+glm::dvec2 CGUIMainWindow::get_global_mouse_position(GLFWwindow* window)
 {
-    CGUIPointd cursor_position;
-    CGUIPointi window_position;
+    glm::dvec2 cursor_position;
+    glm::ivec2 window_position;
     glfwGetCursorPos(window, &cursor_position.x, &cursor_position.y);
     glfwGetWindowPos(window, &window_position.x, &window_position.y);
 
@@ -370,6 +453,43 @@ void CGUIMainWindow::key_callback(GLFWwindow* window, int key, int scan_code, in
                 {
                     glfwSetWindowShouldClose(main_window_handler->main_window, GLFW_TRUE);
                     main_window_handler->debug_handler.post_log("Escape has been pressed, window will be closed.", DEBUG_MODE_LOG);
+                }
+                break;
+
+                case GLFW_KEY_I:
+                {
+                    if (mods & GLFW_MOD_CONTROL && mods & GLFW_MOD_SHIFT)
+                    {
+                        int xpos, ypos, xsize, ysize;
+                        glfwGetWindowPos(main_window_handler->main_window, &xpos, &ypos);
+                        glfwGetWindowSize(main_window_handler->main_window, &xsize, &ysize);
+                        main_window_handler->debug_handler.post_log("", DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log("/ DEBUG INFO START", DEBUG_MODE_MESSAGE);
+                        main_window_handler->debug_handler.post_log(std::string("| Time passed since programm started: " + std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - main_window_handler->program_start_time).count()) + "ms"), DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log(std::string("| Time required to render last frame: " + std::to_string(main_window_handler->last_frame_render_time) + "ms"), DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log(std::string("| Rough estimation of fps: " + std::to_string(1000.0f / main_window_handler->last_frame_render_time) + "fps"), DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log(std::string("| Real amount of fps: " + std::to_string(main_window_handler->last_frames_rendered_per_second) + "fps"), DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log(std::string("| GLFW version string: " + std::string(glfwGetVersionString())), DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log(std::string("| Current monitor: " + std::string(glfwGetMonitorName(main_window_handler->get_monitor_by_cpos({xpos,ypos})))), DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log(std::string("| Current window position: x=" + std::to_string(xpos) + " y=" + std::to_string(ypos)), DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log(std::string("| Current window size: x=" + std::to_string(xsize) + " y=" + std::to_string(ysize)), DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log(std::string("| Current window mode: " + std::string((main_window_handler->full_screen == true) ? "Fullscreen" : "Winowed")), DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log(std::string("| Current window decoration: " + std::string((glfwGetWindowAttrib(main_window_handler->main_window, GLFW_DECORATED) == true) ? "Decorated" : "Not Decorated")), DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log(std::string("| Current window floating: " + std::string((glfwGetWindowAttrib(main_window_handler->main_window, GLFW_FLOATING) == true) ? "Floating" : "Not Floating")), DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log(std::string("| Current window visible: " + std::string((glfwGetWindowAttrib(main_window_handler->main_window, GLFW_VISIBLE) == true) ? "Visible" : "Not Visible")), DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log(std::string("| Current window resizable: " + std::string((glfwGetWindowAttrib(main_window_handler->main_window, GLFW_RESIZABLE) == true) ? "Resizable" : "Not Resizable")), DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log("\\ DEBUG INFO END", DEBUG_MODE_MESSAGE);
+                        main_window_handler->debug_handler.post_log("", DEBUG_MODE_NONE);
+                    }
+                }
+                break;
+
+                case GLFW_KEY_F1:
+                {
+                    if (mods & GLFW_MOD_CONTROL && mods & GLFW_MOD_SHIFT)
+                    {
+                        main_window_handler->switch_window_mode();
+                    }
                 }
                 break;
 
@@ -440,11 +560,11 @@ void CGUIMainWindow::cursor_position_callback(GLFWwindow* window, double xpos, d
     CGUIMainWindow* main_window_handler = reinterpret_cast<CGUIMainWindow*>(glfwGetWindowUserPointer(window));
     if (main_window_handler->mouse_lb_pressed)
     {
-        CGUIPointd new_mouse_press_position = {xpos, ypos};
+        glm::dvec2 new_mouse_press_position = {xpos, ypos};
 
         if (new_mouse_press_position != main_window_handler->last_mouse_press_position)
         {
-            CGUIPointi window_position;
+            glm::ivec2 window_position;
             glfwGetWindowPos(main_window_handler->main_window, &window_position.x, &window_position.y);
             glfwSetWindowPos(main_window_handler->main_window, window_position.x + (new_mouse_press_position.x - (int)main_window_handler->last_mouse_press_position.x), window_position.y + (new_mouse_press_position.y - (int)main_window_handler->last_mouse_press_position.y));
         }
@@ -482,9 +602,10 @@ void CGUIMainWindow::mouse_button_callback(GLFWwindow* window, int button, int a
             {
                 case GLFW_MOUSE_BUTTON_LEFT:
                 {
+                    main_window_handler->last_lb_press_time = std::chrono::steady_clock::now();
                     main_window_handler->mouse_lb_pressed = true;
 
-                    CGUIPointd new_mouse_press_position;
+                    glm::dvec2 new_mouse_press_position;
                     glfwGetCursorPos(window, &new_mouse_press_position.x, &new_mouse_press_position.y);
                     main_window_handler->last_mouse_press_position = new_mouse_press_position;
 
@@ -507,7 +628,7 @@ void CGUIMainWindow::mouse_button_callback(GLFWwindow* window, int button, int a
                 case GLFW_MOUSE_BUTTON_LEFT:
                 {
                     main_window_handler->mouse_lb_pressed = false;
-                    main_window_handler->debug_handler.post_log("Left button has been released.", DEBUG_MODE_LOG);
+                    main_window_handler->debug_handler.post_log(std::string("Left button has been released, it was held for: " + std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - main_window_handler->last_lb_press_time).count()) + "ms"), DEBUG_MODE_LOG);
                 }
                 break;
 
@@ -551,23 +672,3 @@ void CGUIMainWindow::framebuffer_size_callback(GLFWwindow* window, int width, in
 {
     glViewport(0, 0, width, height);
 }  
-
-/**
- * @brief      Frame renderer wrapper.
- */
-void CGUIMainWindow::frame_renderer_wrapper()
-{
-    glfwMakeContextCurrent(this->main_window);
-
-    std::stringstream thread_id;
-    thread_id << std::this_thread::get_id();
-
-    this->thread_mutex.lock();
-
-    this->debug_handler.post_log(std::string("Renderer wrapper has been assigned to thread: ") + std::to_string(std::stoi(thread_id.str())), DEBUG_MODE_LOG);
-    
-    this->thread_mutex.unlock();
-
-    this->render_frames();
-    return;
-}
