@@ -42,6 +42,8 @@
 #include <thread>
 #include <mutex>
 
+#include <condition_variable>
+
 /**
  * Some usefull defines for shader compiler.
  */
@@ -132,7 +134,7 @@ private:
 
     bool character_mode     = false;
     bool mouse_lb_pressed   = false;
-    bool is_resizing        = false;
+    bool is_resized         = true;
 
     std::chrono::time_point<std::chrono::steady_clock> program_start_time;
     std::chrono::time_point<std::chrono::steady_clock> last_lb_press_time;
@@ -156,7 +158,8 @@ private:
 
     std::thread* render_thread;
 
-    std::mutex thread_mutex;
+    std::mutex              thread_mutex;
+    std::condition_variable thread_con_v;
 };
 
 #endif // CGUIMAINWINOW_HPP

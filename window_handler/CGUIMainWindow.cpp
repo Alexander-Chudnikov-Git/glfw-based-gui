@@ -269,30 +269,36 @@ void CGUIMainWindow::render_frames()
         
         float framebuffer_ratio;
         glm::ivec2 framebuffer_size;
-
-        glfwGetFramebufferSize(main_window, &framebuffer_size.x, &framebuffer_size.y);
-        framebuffer_ratio = framebuffer_size.x / (float) framebuffer_size.y;
-
-        thread_mutex.lock();
-
-        glViewport(0, 0, framebuffer_size.x, framebuffer_size.y);
-        glClearColor((rand() % 100) / 100.0f, (rand() % 100) / 100.0f, (rand() % 100) / 100.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        if (vertical_sync)
-        {
-            glFinish();
-        }
         
-        glfwSwapBuffers(main_window);
-        
-        if (vertical_sync)
         {
-            glFinish();
-        }
-        glfwPostEmptyEvent();
+            std::unique_lock thread_lock(thread_mutex);
+            if (!is_resized)
+            {
+                thread_con_v.wait(thread_lock, [this]{return is_resized;});
+            }
 
-        thread_mutex.unlock();
+            glfwGetFramebufferSize(main_window, &framebuffer_size.x, &framebuffer_size.y);
+            framebuffer_ratio = framebuffer_size.x / (float) framebuffer_size.y;
+
+            glViewport(0, 0, framebuffer_size.x, framebuffer_size.y);
+            glClearColor((rand() % 100) / 100.0f, (rand() % 100) / 100.0f, (rand() % 100) / 100.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
+
+            if (vertical_sync)
+            {
+                glFinish();
+            }
+            
+            glfwSwapBuffers(main_window);
+            
+            if (vertical_sync)
+            {
+                glFinish();
+            }
+            glfwPostEmptyEvent();
+
+            thread_lock.unlock();
+        }
 
         last_frame_render_time_end = std::chrono::steady_clock::now();
         last_frame_render_time = std::chrono::duration_cast<std::chrono::milliseconds>(last_frame_render_time_end - last_frame_render_time_start).count();
@@ -569,29 +575,35 @@ uint8_t CGUIMainWindow::assert_window_press_type(glm::dvec2 press_position)
  */
 void CGUIMainWindow::resize_window_rect(GLFWwindow* window, glm::ivec2 pos, glm::ivec2 size)
 {
-    while(thread_mutex.try_lock());
+    is_resized = false;
 
-    if (!full_screen)
     {
-        #if defined(__APPLE__)
-            debug_handler.post_log(std::string("Window position: x=" + std::to_string(pos.x) + " y=" + std::to_string(pos.y) + " size: x=" + std::to_string(size.x) + " y=" + std::to_string(size.y)), DEBUG_MODE_ERROR);
-            // Fix apple about page padding 
-            // [IMPORTANT]
-            if (pos.y < 25)
-            {
-                size.y -= (25 - pos.y);
-                pos.y = 25;
-            }
-        #endif
-        const GLFWvidmode* monitor_video_mode = glfwGetVideoMode(current_monitor);
-        glfwSetWindowMonitor(window, NULL, pos.x, pos.y, size.x, size.y, monitor_video_mode->refreshRate);
-    }
-    else
-    {
-        debug_handler.post_log("Resize during fullscreen is not only viable, but also possible.", DEBUG_MODE_ERROR);
+        std::lock_guard lock_resize(thread_mutex);
+
+        if (!full_screen)
+        {
+            #if defined(__APPLE__)
+                debug_handler.post_log(std::string("Window position: x=" + std::to_string(pos.x) + " y=" + std::to_string(pos.y) + " size: x=" + std::to_string(size.x) + " y=" + std::to_string(size.y)), DEBUG_MODE_ERROR);
+                // Fix apple about page padding 
+                // [IMPORTANT]
+                if (pos.y < 25)
+                {
+                    size.y -= (25 - pos.y);
+                    pos.y = 25;
+                }
+            #endif
+            const GLFWvidmode* monitor_video_mode = glfwGetVideoMode(current_monitor);
+            glfwSetWindowMonitor(window, NULL, pos.x, pos.y, size.x, size.y, monitor_video_mode->refreshRate);
+        }
+        else
+        {
+            debug_handler.post_log("Resize during fullscreen is not only viable, but also possible.", DEBUG_MODE_ERROR);
+        }
+
+        is_resized = true;
     }
 
-    thread_mutex.unlock();
+    thread_con_v.notify_all();
 
     return;
 }
