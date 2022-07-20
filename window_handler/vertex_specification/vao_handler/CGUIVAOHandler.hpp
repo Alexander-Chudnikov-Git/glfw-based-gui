@@ -6,7 +6,7 @@
  *             vbo, that later can be used in order to draw objects via GLFW.
  *
  * @author     THE_CHOODICK
- * @date       23-02-2022
+ * @date       20-07-2022
  * @version    0.0.1
  * 
  * @warning    This library is under development, so it might work unstable.  
