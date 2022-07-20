@@ -112,9 +112,9 @@ GLuint CGUIShaderCompiler::compile_shader(const std::string& vertex_shader, cons
 
     glAttachShader(id, compiled_fragment);
 
+    compiled_geometry = glCreateShader(GL_GEOMETRY_SHADER);
     if (std::strcmp(geometry_shader.c_str(), "NONE") != 0)
     {
-        compiled_geometry = glCreateShader(GL_GEOMETRY_SHADER);
         source_buffer = geometry_shader.c_str();
         glShaderSource(compiled_geometry, 1, &source_buffer, NULL);
         glCompileShader(compiled_geometry);

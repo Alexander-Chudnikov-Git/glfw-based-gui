@@ -25,11 +25,21 @@
 #ifndef CGUISHADERCOMPILER_HPP
 #define CGUISHADERCOMPILER_HPP
 
+//#if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
+//    #define GLFW_EXPOSE_NATIVE_WIN32
+//#endif
+
 /**<
  * Include GLFW and GLAD for window handling.
  */
 #include "../glad/glad.h"
 #include "../glfw/include/GLFW/glfw3.h"
+
+//#if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
+//    #include "../glfw/include/GLFW/glfw3native.h"
+//    #include <windows.h>
+//#endif
+
 #include "../glm/glm/glm.hpp"
 #include "../glm/glm/gtc/matrix_transform.hpp"
 

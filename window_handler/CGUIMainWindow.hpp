@@ -93,12 +93,17 @@ private:
     uint8_t assert_window_press_type(glm::dvec2 press_position);
 
     GLFWmonitor* get_monitor_by_cpos(glm::dvec2 cursor_position);
+    GLFWmonitor* get_current_monitor(GLFWwindow *window);
 
     bool collision(glm::ivec2 rect_tl, glm::ivec2 rect_br, glm::ivec2 point);
 
     glm::dvec2 get_global_mouse_position(GLFWwindow* window);
 
     void resize_window_rect(GLFWwindow* window, glm::ivec2 pos, glm::ivec2 size);
+
+    //#if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
+    //    void windows_api_resize(GLFWwindow* window, int border);
+    //#endif
 
 private:
     static void key_callback(GLFWwindow* window, int key, int scan_code, int action, int mods);
@@ -127,6 +132,7 @@ private:
 
     bool character_mode     = false;
     bool mouse_lb_pressed   = false;
+    bool is_resizing        = false;
 
     std::chrono::time_point<std::chrono::steady_clock> program_start_time;
     std::chrono::time_point<std::chrono::steady_clock> last_lb_press_time;
@@ -150,7 +156,7 @@ private:
 
     std::thread* render_thread;
 
-    std::recursive_mutex thread_mutex;
+    std::mutex thread_mutex;
 };
 
 #endif // CGUIMAINWINOW_HPP

@@ -266,13 +266,14 @@ void CGUIMainWindow::render_frames()
     while(!glfwWindowShouldClose(main_window))
     {
         last_frame_render_time_start = std::chrono::steady_clock::now();
-        thread_mutex.lock();
-
+        
         float framebuffer_ratio;
         glm::ivec2 framebuffer_size;
 
         glfwGetFramebufferSize(main_window, &framebuffer_size.x, &framebuffer_size.y);
         framebuffer_ratio = framebuffer_size.x / (float) framebuffer_size.y;
+
+        thread_mutex.lock();
 
         glViewport(0, 0, framebuffer_size.x, framebuffer_size.y);
         glClearColor((rand() % 100) / 100.0f, (rand() % 100) / 100.0f, (rand() % 100) / 100.0f, 1.0f);
@@ -282,7 +283,9 @@ void CGUIMainWindow::render_frames()
         {
             glFinish();
         }
+        
         glfwSwapBuffers(main_window);
+        
         if (vertical_sync)
         {
             glFinish();
@@ -290,6 +293,7 @@ void CGUIMainWindow::render_frames()
         glfwPostEmptyEvent();
 
         thread_mutex.unlock();
+
         last_frame_render_time_end = std::chrono::steady_clock::now();
         last_frame_render_time = std::chrono::duration_cast<std::chrono::milliseconds>(last_frame_render_time_end - last_frame_render_time_start).count();
 
@@ -327,16 +331,14 @@ void CGUIMainWindow::update_events()
  */
 void CGUIMainWindow::frame_renderer_wrapper()
 {
+    //std::lock_guard<std::mutex> lock(thread_mutex);
+    
     glfwMakeContextCurrent(this->main_window);
 
     std::stringstream thread_id;
     thread_id << std::this_thread::get_id();
 
-    this->thread_mutex.lock();
-
     this->debug_handler.post_log(std::string("Renderer wrapper has been assigned to thread: ") + std::to_string(std::stoi(thread_id.str())), DEBUG_MODE_LOG);
-    
-    this->thread_mutex.unlock();
 
     this->render_frames();
     return;
@@ -393,27 +395,73 @@ void CGUIMainWindow::switch_window_mode()
 
 /**
  * @brief      Gets the selected monitor.
- *
+ * 
+ * @param      cursor_position   Position of a cursor.
+ * 
  * @return     Focused  window pointer.
  */
 GLFWmonitor* CGUIMainWindow::get_monitor_by_cpos(glm::dvec2 cursor_position)
 {
     int monitor_count;
+    glm::ivec2 monitor_position;
+    glm::ivec2 monitor_size;
+
     GLFWmonitor** monitors = glfwGetMonitors(&monitor_count);
-    for (int current_monitor = 0; current_monitor < monitor_count; ++current_monitor)
+    for (int current_monitor_id = 0; current_monitor_id < monitor_count; ++current_monitor_id)
     {   
-        glm::ivec2 monitor_position;
-        glfwGetMonitorPos(monitors[current_monitor], &monitor_position.x, &monitor_position.y);
+        const GLFWvidmode* monitor_video_mode = glfwGetVideoMode(monitors[current_monitor_id]);
 
-        //debug_handler.post_log(std::string("Monitor: ") + glfwGetMonitorName(monitors[current_monitor]) + std::string(" position: x-") + std::to_string(cursor_position.x) + std::string(" y-") + std::to_string(cursor_position.y), DEBUG_MODE_LOG);
+        monitor_size = {monitor_video_mode->width, monitor_video_mode->height};
 
-        const GLFWvidmode* monitor_video_mode = glfwGetVideoMode(monitors[current_monitor]);
+        glfwGetMonitorPos(monitors[current_monitor_id], &monitor_position.x, &monitor_position.y);
+        
         if (collision(glm::ivec2(monitor_position.x, monitor_position.y), glm::ivec2(monitor_position.x + monitor_video_mode->width, monitor_position.y + monitor_video_mode->height), glm::ivec2(cursor_position.x, cursor_position.y)))
         {
-            return monitors[current_monitor];  
+            return monitors[current_monitor_id];  
         }
+        //debug_handler.post_log(std::string("Monitor: ") + glfwGetMonitorName(monitors[current_monitor_id]) + std::string(" position: x-") + std::to_string(cursor_position.x) + std::string(" y-") + std::to_string(cursor_position.y), DEBUG_MODE_LOG);
     }
     return NULL;
+}
+
+/**
+ * @brief      Gets the current monitor.
+ *
+ * @param      window   Window pointer.
+ * 
+ * @return     Current window pointer.
+ */
+GLFWmonitor* CGUIMainWindow::get_current_monitor(GLFWwindow *window)
+{
+    int monitor_count, overlap_factor; 
+    int best_overlap_factor = 0;
+    glm::ivec2 monitor_position, window_position;
+    glm::ivec2 monitor_size, window_size;
+
+    glfwGetWindowPos(window, &window_position.x, &window_position.y);
+    glfwGetWindowSize(window, &window_size.x, &window_size.y);
+
+    GLFWmonitor* best_current_monitor = NULL;
+    GLFWmonitor** monitors = glfwGetMonitors(&monitor_count);
+    for (int current_monitor_id = 0; current_monitor_id < monitor_count; ++current_monitor_id)
+    {   
+        const GLFWvidmode* monitor_video_mode = glfwGetVideoMode(monitors[current_monitor_id]);
+
+        monitor_size = {monitor_video_mode->width, monitor_video_mode->height};
+
+        glfwGetMonitorPos(monitors[current_monitor_id], &monitor_position.x, &monitor_position.y);
+
+        overlap_factor = std::max(0, std::min(window_position.x + window_size.x, monitor_position.x + monitor_size.x) - std::max(window_position.x, monitor_position.x)) * std::max(0, std::min(window_position.y + window_size.y, monitor_position.y + monitor_size.y) - std::max(window_position.y, monitor_position.y));
+
+        if (best_overlap_factor < overlap_factor) 
+        {
+            best_overlap_factor = overlap_factor;
+            best_current_monitor = monitors[current_monitor_id];
+        }
+        
+        //debug_handler.post_log(std::string("Monitor: ") + glfwGetMonitorName(monitors[current_monitor_id]) + std::string(" position: x-") + std::to_string(cursor_position.x) + std::string(" y-") + std::to_string(cursor_position.y), DEBUG_MODE_LOG);
+    }
+    return best_current_monitor;
 }
 
 /**
@@ -521,9 +569,11 @@ uint8_t CGUIMainWindow::assert_window_press_type(glm::dvec2 press_position)
  */
 void CGUIMainWindow::resize_window_rect(GLFWwindow* window, glm::ivec2 pos, glm::ivec2 size)
 {
+    while(thread_mutex.try_lock());
+
     if (!full_screen)
     {
-        #if __APPLE__
+        #if defined(__APPLE__)
             debug_handler.post_log(std::string("Window position: x=" + std::to_string(pos.x) + " y=" + std::to_string(pos.y) + " size: x=" + std::to_string(size.x) + " y=" + std::to_string(size.y)), DEBUG_MODE_ERROR);
             // Fix apple about page padding 
             // [IMPORTANT]
@@ -534,12 +584,16 @@ void CGUIMainWindow::resize_window_rect(GLFWwindow* window, glm::ivec2 pos, glm:
             }
         #endif
         const GLFWvidmode* monitor_video_mode = glfwGetVideoMode(current_monitor);
-        glfwSetWindowMonitor(main_window, NULL, pos.x, pos.y, size.x, size.y, monitor_video_mode->refreshRate);
+        glfwSetWindowMonitor(window, NULL, pos.x, pos.y, size.x, size.y, monitor_video_mode->refreshRate);
     }
     else
     {
         debug_handler.post_log("Resize during fullscreen is not only viable, but also possible.", DEBUG_MODE_ERROR);
     }
+
+    thread_mutex.unlock();
+
+    return;
 }
 
 /********************************************************************************
@@ -589,7 +643,7 @@ void CGUIMainWindow::key_callback(GLFWwindow* window, int key, int scan_code, in
                         main_window_handler->debug_handler.post_log(std::string("| Rough estimation of fps: " + std::to_string(1000.0f / main_window_handler->last_frame_render_time) + "fps"), DEBUG_MODE_NONE);
                         main_window_handler->debug_handler.post_log(std::string("| Real amount of fps: " + std::to_string(main_window_handler->last_frames_rendered_per_second) + "fps"), DEBUG_MODE_NONE);
                         main_window_handler->debug_handler.post_log(std::string("| GLFW version string: " + std::string(glfwGetVersionString())), DEBUG_MODE_NONE);
-                        main_window_handler->debug_handler.post_log(std::string("| Current monitor: " + std::string(glfwGetMonitorName(main_window_handler->get_monitor_by_cpos({window_position.x,window_position.y})))), DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log(std::string("| Current monitor: " + std::string(glfwGetMonitorName(main_window_handler->get_current_monitor(main_window_handler->main_window)))), DEBUG_MODE_NONE);
                         main_window_handler->debug_handler.post_log(std::string("| Current window position: x=" + std::to_string(window_position.x) + " y=" + std::to_string(window_position.y)), DEBUG_MODE_NONE);
                         main_window_handler->debug_handler.post_log(std::string("| Current window size: x=" + std::to_string(window_size.x) + " y=" + std::to_string(window_size.y)), DEBUG_MODE_NONE);
                         main_window_handler->debug_handler.post_log(std::string("| Current cursor local position: x=" + std::to_string(local_mouse_position.x) + " y=" + std::to_string(local_mouse_position.y)), DEBUG_MODE_NONE);
@@ -719,9 +773,7 @@ void CGUIMainWindow::cursor_position_callback(GLFWwindow* window, double xpos, d
                 {
                     window_position_temp.y = mouse_press_pos.y;
                 }
-                main_window_handler->thread_mutex.lock();
                 main_window_handler->resize_window_rect(main_window_handler->main_window, {window_position_temp.x, window_position_temp.y}, {window_size.x - (window_position_temp.x - window_position.x), window_size.y - (window_position_temp.y - window_position.y)});
-                main_window_handler->thread_mutex.unlock();
             }
         }
         break;
@@ -745,9 +797,7 @@ void CGUIMainWindow::cursor_position_callback(GLFWwindow* window, double xpos, d
                 {
                     window_size_temp.y = mouse_press_pos.y - window_position.y;
                 }
-                main_window_handler->thread_mutex.lock();
                 main_window_handler->resize_window_rect(main_window_handler->main_window, {window_position.x, window_position.y}, {window_size_temp.x, window_size_temp.y});
-                main_window_handler->thread_mutex.unlock();
             }
         }
         break;
@@ -771,9 +821,7 @@ void CGUIMainWindow::cursor_position_callback(GLFWwindow* window, double xpos, d
                 {
                     window_geom_temp.y = mouse_press_pos.y;
                 }
-                main_window_handler->thread_mutex.lock();
                 main_window_handler->resize_window_rect(main_window_handler->main_window, {window_position.x, window_geom_temp.y}, {window_geom_temp.x, window_size.y - (window_geom_temp.y - window_position.y)});
-                main_window_handler->thread_mutex.unlock();
             }
         }
         break; 
@@ -797,9 +845,7 @@ void CGUIMainWindow::cursor_position_callback(GLFWwindow* window, double xpos, d
                 {
                     window_geom_temp.y = mouse_press_pos.y - window_position.y;
                 }
-                main_window_handler->thread_mutex.lock();
                 main_window_handler->resize_window_rect(main_window_handler->main_window, {window_geom_temp.x, window_position.y}, {window_size.x - (window_geom_temp.x - window_position.x), window_geom_temp.y});
-                main_window_handler->thread_mutex.unlock();
             }
         }
         break;
@@ -821,9 +867,7 @@ void CGUIMainWindow::cursor_position_callback(GLFWwindow* window, double xpos, d
                 {
                     y_size = mouse_press_pos.y;
                 }
-                main_window_handler->thread_mutex.lock();
                 main_window_handler->resize_window_rect(main_window_handler->main_window, {window_position.x, y_size}, {window_size.x, window_size.y - (y_size - window_position.y)});
-                main_window_handler->thread_mutex.unlock();
             }
         }
         break;
@@ -839,15 +883,13 @@ void CGUIMainWindow::cursor_position_callback(GLFWwindow* window, double xpos, d
                 glfwGetWindowPos(main_window_handler->main_window, &window_position.x, &window_position.y);
                 glfwGetWindowSize(main_window_handler->main_window, &window_size.x, &window_size.y);
 
-                y_size = window_position.y;
+                y_size = window_size.y;
 
                 if ((mouse_press_pos.y - window_position.y) > main_window_handler->window_size_min.y)
                 {
                     y_size = mouse_press_pos.y - window_position.y;
                 }
-                main_window_handler->thread_mutex.lock();
                 main_window_handler->resize_window_rect(main_window_handler->main_window, {window_position.x, window_position.y}, {window_size.x, y_size});
-                main_window_handler->thread_mutex.unlock();
             }
         }
         break;
@@ -868,9 +910,7 @@ void CGUIMainWindow::cursor_position_callback(GLFWwindow* window, double xpos, d
                 {
                     x_size = mouse_press_pos.x - window_position.x;
                 }
-                main_window_handler->thread_mutex.lock();
                 main_window_handler->resize_window_rect(main_window_handler->main_window, {window_position.x, window_position.y}, {x_size, window_size.y});
-                main_window_handler->thread_mutex.unlock();
             }
         }
         break;
@@ -891,9 +931,7 @@ void CGUIMainWindow::cursor_position_callback(GLFWwindow* window, double xpos, d
                 {
                     x_size = mouse_press_pos.x;
                 }
-                main_window_handler->thread_mutex.lock();
                 main_window_handler->resize_window_rect(main_window_handler->main_window, {x_size, window_position.y}, {window_size.x - (x_size - window_position.x), window_size.y});
-                main_window_handler->thread_mutex.unlock();
             }
         }
         break;
