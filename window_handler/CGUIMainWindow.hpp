@@ -48,6 +48,22 @@
 #define CGUI_SHADER_TRIANDLE "CGUI_SHADER_TRIANDLE"
 
 /**
+ * Some usefull defines for window press type.
+ */
+#define CGUI_PRESS_TYPE_WINDOW_MOVE                 0
+#define CGUI_PRESS_TYPE_WINDOW_RESIZE_TOP_LEFT      1
+#define CGUI_PRESS_TYPE_WINDOW_RESIZE_TOP           2
+#define CGUI_PRESS_TYPE_WINDOW_RESIZE_TOP_RIGHT     3
+#define CGUI_PRESS_TYPE_WINDOW_RESIZE_RIGHT         4
+#define CGUI_PRESS_TYPE_WINDOW_RESIZE_BOTTOM_RIGHT  5
+#define CGUI_PRESS_TYPE_WINDOW_RESIZE_BOTTOM        6
+#define CGUI_PRESS_TYPE_WINDOW_RESIZE_BOTTOM_LEFT   7
+#define CGUI_PRESS_TYPE_WINDOW_RESIZE_LEFT          8
+#define CGUI_PRESS_TYPE_WINDOW_FULLSCREEN           253
+#define CGUI_PRESS_TYPE_WINDOW_OUTSIDE              254
+#define CGUI_PRESS_TYPE_WINDOW_NONE                 255
+
+/**
  * @brief      This class represents creation and handling of main window. 
  *             Class is based on GLFW and glad libraries, and uses them in oreder to create/handle/render window.
  */
@@ -74,10 +90,15 @@ private:
     void set_windowed_mode();
     void switch_window_mode();
 
+    uint8_t assert_window_press_type(glm::dvec2 press_position);
 
     GLFWmonitor* get_monitor_by_cpos(glm::dvec2 cursor_position);
 
+    bool collision(glm::ivec2 rect_tl, glm::ivec2 rect_br, glm::ivec2 point);
+
     glm::dvec2 get_global_mouse_position(GLFWwindow* window);
+
+    void resize_window_rect(GLFWwindow* window, glm::ivec2 pos, glm::ivec2 size);
 
 private:
     static void key_callback(GLFWwindow* window, int key, int scan_code, int action, int mods);
@@ -87,12 +108,14 @@ private:
     static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
     static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+    static void window_size_callback(GLFWwindow* window, int width, int height);
 
 private:
     CGUIDebugHandler debug_handler;
 
     GLFWwindow*     main_window;
     GLFWmonitor*    current_monitor;
+    GLFWcursor*     current_cursor;
 
     CGUIShaderCompiler* shaders;
 
@@ -108,12 +131,17 @@ private:
     std::chrono::time_point<std::chrono::steady_clock> program_start_time;
     std::chrono::time_point<std::chrono::steady_clock> last_lb_press_time;
 
-    size_t last_frame_render_time = 0;
-    size_t last_frames_rendered_per_second = 0;
+    size_t last_frame_render_time           = 0;
+    size_t last_frame_event_time            = 0;
+    size_t last_frames_rendered_per_second  = 0;
+
+    size_t  window_drag_offset  = 10;
+    uint8_t window_press_type   = 0;
 
     glm::dvec2 last_mouse_press_position;
 
     glm::ivec2 last_window_size     = {512, 256};
+    glm::ivec2 window_size_min      = {480, 240};
     glm::ivec2 last_window_position = {0, 0};
 
     fs::path triangle_vertext_file_path     = "cgui_tri_vert.vs";
