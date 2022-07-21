@@ -33,7 +33,6 @@ endif()
 
 
 if (APPLE)
-
 	set_source_files_properties(${ICON_PATH} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 	file(COPY ${ICON_PATH} DESTINATION "${PROJECT_NAME}.app/Contents/Resources")
 	file(COPY ${VS_SHADER_PATH} DESTINATION "${PROJECT_NAME}.app/Contents/Resources")
@@ -42,16 +41,17 @@ if (APPLE)
 
   	add_executable(${PROJECT_NAME} MACOSX_BUNDLE ${ICON_PATH} main.cpp)				# Create executable with the name of a project add MACOSX_BUNDLE
   	set_target_properties(${PROJECT_NAME} PROPERTIES
-    BUNDLE True
-    MACOSX_BUNDLE_GUI_IDENTIFIER choodick.com.${PROJECT_NAME}
-    MACOSX_BUNDLE_BUNDLE_NAME ${PROJECT_NAME}
-    MACOSX_BUNDLE_BUNDLE_VERSION "0.1"
-    MACOSX_BUNDLE_SHORT_VERSION_STRING "0.1"
-    MACOSX_BUNDLE_ICONFILE ${ICON_NAME}
-)
+	    BUNDLE True
+	    MACOSX_BUNDLE_GUI_IDENTIFIER choodick.com.${PROJECT_NAME}
+	    MACOSX_BUNDLE_BUNDLE_NAME ${PROJECT_NAME}
+	    MACOSX_BUNDLE_BUNDLE_VERSION "0.1"
+	    MACOSX_BUNDLE_SHORT_VERSION_STRING "0.1"
+	    MACOSX_BUNDLE_ICONFILE ${ICON_NAME}
+	)
 endif()
 
 if (WIN32)
+	set_source_files_properties(${CMAKE_SOURCE_DIR}/res.rc LANGUAGE RC)
 	add_executable(${PROJECT_NAME} WIN32 main.cpp)						# Create executable with the name of a project add WIN32
 endif()
 
