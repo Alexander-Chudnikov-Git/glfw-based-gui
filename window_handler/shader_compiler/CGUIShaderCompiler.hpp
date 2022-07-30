@@ -6,7 +6,7 @@
  *             that would be later used by renderer.
  *
  * @author     THE_CHOODICK
- * @date       22-07-2022
+ * @date       30-07-2022
  * @version    0.0.1
  * 
  * @warning    This library is under development, so it might work unstable.  
