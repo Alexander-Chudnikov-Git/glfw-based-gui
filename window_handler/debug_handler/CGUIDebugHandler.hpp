@@ -51,13 +51,13 @@
 #define GLFW_NO_WINDOW_CONTEXT      0x0001000A
 
 
-// Headers for string aligment and stuff
+// Headers for string alignment and stuff
 #include <string>
 #include <sstream>
 #include <iomanip>
 #include <iostream>
 
-// Headers for fs interaction
+// Headers for FS interaction
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fstream>
@@ -65,7 +65,6 @@
 
 // Headers for time 
 #include <ctime>
-
 
 #ifdef __APPLE__
     //#include <CoreFoundation/CoreFoundation.h>
@@ -81,7 +80,7 @@
 
 /**
  * @brief      This class implements the whole debug functionality of CGUI project. 
- *             Class is based on standart io libraries, that are being used in order to produce log files.
+ *             Class is based on standard IO libraries, that are being used in order to produce log files.
  */
 class CGUIDebugHandler
 {

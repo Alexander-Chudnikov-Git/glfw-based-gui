@@ -45,6 +45,12 @@
 
 #include "../debug_handler/CGUIDebugHandler.hpp"
 
+#if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
+    #include "../../resources/resources.hpp" 
+
+    #include <windows.h>
+#endif // Windows
+
 #include <unordered_map>
 #include <cstring>
 #include <vector>
@@ -55,12 +61,18 @@ public:
     CGUIShaderCompiler();
     CGUIShaderCompiler(const std::string& shader_name, fs::path vertext_file_path, fs::path fragment_file_path, fs::path geometry_file_path);
     CGUIShaderCompiler(const std::string& shader_name, const std::string& vertex_shader, const std::string& fragment_shader, const std::string& geometry_shader);
+    #if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
+        CGUIShaderCompiler(const std::string& shader_name, unsigned int vertex_shader_rsid, unsigned int fragment_shader_rsid, unsigned int geometry_shader_rsid);
+    #endif // Windows
     ~CGUIShaderCompiler();
 
     GLuint compile_shader(const std::string& vertex_shader, const std::string& fragment_shader, const std::string& geometry_shader);
 
     void add_shader(const std::string& shader_name, fs::path vertext_file_path, fs::path fragment_file_path, fs::path geometry_file_path);
     void add_shader(const std::string& shader_name, const std::string& vertex_shader, const std::string& fragment_shader, const std::string& geometry_shader);
+    #if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
+        void add_shader(const std::string& shader_name, unsigned int vertex_shader_rsid, unsigned int fragment_shader_rsid, unsigned int geometry_shader_rsid);
+    #endif // Windows
     void del_shader(const std::string& shader_name);
     void use_shader(const std::string& shader_name);
 

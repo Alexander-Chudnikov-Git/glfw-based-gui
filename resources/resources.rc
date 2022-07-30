@@ -1,1 +1,14 @@
-GBG_ICON_0		ICON		DISCARDABLE		"icon.ico"
+#include "resources.hpp"
+
+
+// Application icon
+GBG_ICON_0			ICON		DISCARDABLE		"icon.ico"
+
+// Vertex shaders
+GBG_VERT_SHADER_0	SHADERS						"cgui_tri_vert.vs"
+
+// Fragmentation shaders
+GBG_FRAG_SHADER_0	SHADERS						"cgui_tri_frag.fs"
+
+// Geometry shaders
+GBG_GEOM_SHADER_0	SHADERS						"cgui_tri_geom.gs"

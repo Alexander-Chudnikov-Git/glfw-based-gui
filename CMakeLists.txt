@@ -1,21 +1,23 @@
-cmake_minimum_required(VERSION 3.21.1)									# Minimum requred CMake version
+cmake_minimum_required(VERSION 3.21.1)									# Minimum required CMake version
 
 project(glfw-based-gui)													# Set name to the project
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)										# Set c++ standart to 20
+set(CMAKE_CXX_STANDARD_REQUIRED ON)										# Set c++ standard to 20
 
-set(ICON_NAME "icon.icns")
-set(ICON_PATH ${PROJECT_SOURCE_DIR}/resources/${ICON_NAME})
+if (APPLE)
+	set(ICON_NAME "icon.icns")
+	set(ICON_PATH ${PROJECT_SOURCE_DIR}/resources/${ICON_NAME})
 
-set(VS_SHADER_NAME "cgui_tri_vert.vs")
-set(VS_SHADER_PATH ${PROJECT_SOURCE_DIR}/resources/${VS_SHADER_NAME})
+	set(VS_SHADER_NAME "cgui_tri_vert.vs")
+	set(VS_SHADER_PATH ${PROJECT_SOURCE_DIR}/resources/${VS_SHADER_NAME})
 
-set(FS_SHADER_NAME "cgui_tri_frag.fs")
-set(FS_SHADER_PATH ${PROJECT_SOURCE_DIR}/resources/${FS_SHADER_NAME})
+	set(FS_SHADER_NAME "cgui_tri_frag.fs")
+	set(FS_SHADER_PATH ${PROJECT_SOURCE_DIR}/resources/${FS_SHADER_NAME})
 
-set(GS_SHADER_NAME "cgui_tri_geom.gs")
-set(GS_SHADER_PATH ${PROJECT_SOURCE_DIR}/resources/${GS_SHADER_NAME})
+	set(GS_SHADER_NAME "cgui_tri_geom.gs")
+	set(GS_SHADER_PATH ${PROJECT_SOURCE_DIR}/resources/${GS_SHADER_NAME})
+endif()	
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -Werror -Wno-unused -Ofast")
@@ -51,7 +53,7 @@ if (APPLE)
 endif()
 
 if (WIN32)
-	set_source_files_properties(${PROJECT_SOURCE_DIR}/recources/resources.rc LANGUAGE RC)
+	set_source_files_properties(${PROJECT_SOURCE_DIR}/resources/resources.rc LANGUAGE RC)
 
 	if(MINGW)
         set(CMAKE_RC_COMPILER_INIT windres)
@@ -63,13 +65,14 @@ if (WIN32)
         #if(CMAKE_BUILD_TYPE STREQUAL "DEBUG" OR CMAKE_BUILD_TYPE STREQUAL "RELWITHDEBINFO")
         #   set(RC_CFLAGS "${RC_CFLAGS} -D_DEBUG")
         #endif(CMAKE_BUILD_TYPE STREQUAL "DEBUG" OR CMAKE_BUILD_TYPE STREQUAL "RELWITHDEBINFO")
-        set_source_files_properties(${PROJECT_SOURCE_DIR}/recources/resources.rc COMPILE_FLAGS "${RC_CFLAGS}")
+        set_source_files_properties(${PROJECT_SOURCE_DIR}/resources/resources.rc COMPILE_FLAGS "${RC_CFLAGS}")
+        set(APP_ICON_RESOURCE_WINDOWS ${PROJECT_SOURCE_DIR}/resources/resources.rc)
     endif(MINGW)
 
-	add_executable(${PROJECT_NAME} WIN32 main.cpp)						# Create executable with the name of a project add WIN32
+	add_executable(${PROJECT_NAME} WIN32 main.cpp ${APP_ICON_RESOURCE_WINDOWS})						# Create executable with the name of a project add WIN32
 endif()
 
-add_subdirectory(window_handler)										# Add widnow_handler subdirectory in order to load library
+add_subdirectory(window_handler)										# Add widnow_handler sub directory in order to load library
 
 target_include_directories(${PROJECT_NAME} PUBLIC window_handler/)		# Link include directory 
 target_link_directories(${PROJECT_NAME} PUBLIC window_handler/)			# Link directories for libraries

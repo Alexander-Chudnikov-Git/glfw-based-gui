@@ -38,7 +38,7 @@ CGUIShaderCompiler::CGUIShaderCompiler()
  * @brief      Constructs a new instance of shader compiler.
  *
  * @param[in]  shader_name         The shader name.
- * @param[in]  vertext_file_path   The vertext file path.
+ * @param[in]  vertext_file_path   The vertex file path.
  * @param[in]  fragment_file_path  The fragment file path.
  * @param[in]  geometry_file_path  The geometry file path.
  */
@@ -66,6 +66,24 @@ CGUIShaderCompiler::CGUIShaderCompiler(const std::string& shader_name, const std
     add_shader(shader_name, vertex_shader, fragment_shader, geometry_shader);
 }
 
+#if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
+    /**
+     * @brief      Constructs a new instance of shader compiler.
+     *
+     * @param[in]  shader_name          The shader name.
+     * @param[in]  vertex_shader_rsid   The vertex shader resource id.
+     * @param[in]  fragment_shader_rsid The fragment shader resource id.
+     * @param[in]  geometry_shader_rsid The geometry shader resource id.
+     */
+    CGUIShaderCompiler::CGUIShaderCompiler(const std::string& shader_name, unsigned int vertex_shader_rsid, unsigned int fragment_shader_rsid, unsigned int geometry_shader_rsid)
+    {
+        debug_handler = CGUIDebugHandler(main_debug_handler);
+        debug_handler.post_log("Shader initialization has started.", DEBUG_MODE_LOG);
+
+        add_shader(shader_name, vertex_shader_rsid, fragment_shader_rsid, geometry_shader_rsid);
+    }
+#endif // Windows
+
 /**
  * @brief      Destroys shader compiler.
  */
@@ -88,7 +106,7 @@ GLuint CGUIShaderCompiler::compile_shader(const std::string& vertex_shader, cons
 
     compiled_vertex = glCreateShader(GL_VERTEX_SHADER);
     const char *source_buffer = vertex_shader.c_str();
-    glad_glShaderSource(compiled_vertex, 1, &source_buffer, NULL);
+    glad_glShaderSource(compiled_vertex, 1, (const GLchar**)&source_buffer, NULL);
     glCompileShader(compiled_vertex);
     if(!check_for_errors(compiled_vertex, "VERTEX"))
     {
@@ -100,7 +118,7 @@ GLuint CGUIShaderCompiler::compile_shader(const std::string& vertex_shader, cons
 
     compiled_fragment = glCreateShader(GL_FRAGMENT_SHADER);
     source_buffer = fragment_shader.c_str();
-    glShaderSource(compiled_fragment, 1, &source_buffer, NULL);
+    glShaderSource(compiled_fragment, 1, (const GLchar**)&source_buffer, NULL);
     glCompileShader(compiled_fragment);
     if(!check_for_errors(compiled_fragment, "FRAGMENT"))
     {
@@ -116,7 +134,7 @@ GLuint CGUIShaderCompiler::compile_shader(const std::string& vertex_shader, cons
     if (std::strcmp(geometry_shader.c_str(), "NONE") != 0)
     {
         source_buffer = geometry_shader.c_str();
-        glShaderSource(compiled_geometry, 1, &source_buffer, NULL);
+        glShaderSource(compiled_geometry, 1, (const GLchar**)&source_buffer, NULL);
         glCompileShader(compiled_geometry);
         if(!check_for_errors(compiled_geometry, "GEOMETRY"))
         {
@@ -239,13 +257,132 @@ void CGUIShaderCompiler::add_shader(const std::string &shader_name, fs::path ver
     add_shader(shader_name, vertex_shader_string, fragment_shader_string, geometry_shader_string);
 }
 
+#if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
+    /**
+     * @brief      Adds a shader to map.
+     *
+     * @param[in]  shader_name          The shader name.
+     * @param[in]  vertex_shader_rsid   The vertex shader resource id.
+     * @param[in]  fragment_shader_rsid The fragment shader resource id.
+     * @param[in]  geometry_shader_rsid The geometry shader resource id.
+     */
+    void CGUIShaderCompiler::add_shader(const std::string& shader_name, unsigned int vertex_shader_rsid, unsigned int fragment_shader_rsid, unsigned int geometry_shader_rsid)
+    {
+        std::string vertex_shader_string;
+        std::string fragment_shader_string;
+        std::string geometry_shader_string;
+
+        HRSRC vertex_shader_resource_object = FindResource(NULL, MAKEINTRESOURCE(vertex_shader_rsid), (LPCSTR)SHADERS);
+        if (vertex_shader_resource_object == NULL)
+        {
+            debug_handler.post_log(std::string("Unable to open vertex shader resource: ") + std::to_string(vertex_shader_rsid) + " Error code: " + std::to_string(GetLastError()), DEBUG_MODE_ERROR);
+        }
+        else 
+        {
+            HGLOBAL vertex_shader_resource = LoadResource(NULL, vertex_shader_resource_object);
+            if (vertex_shader_resource == NULL)
+            {
+                char* error_object = (char*)(LPVOID)vertex_shader_resource_object; 
+                debug_handler.post_log(std::string("Unable to load vertex shader resource: ") + std::string(error_object) + " Error code: " + std::to_string(GetLastError()), DEBUG_MODE_ERROR);
+            }
+            else 
+            {
+                LPVOID vertex_shader_void = LockResource(vertex_shader_resource);
+                if (vertex_shader_void == NULL)
+                {
+                    char* error_object = (char*)(LPVOID)vertex_shader_resource;
+                    debug_handler.post_log(std::string("Unable to lock vertex shader resource: ") + std::string(error_object) + " Error code: " + std::to_string(GetLastError()), DEBUG_MODE_ERROR);
+                }
+                else 
+                {
+                    DWORD vertex_shader_string_size = SizeofResource(NULL, vertex_shader_resource_object);
+                    vertex_shader_string = std::string(static_cast<const char *>(vertex_shader_void), vertex_shader_string_size);
+                    vertex_shader_string += "\n";
+                }
+            }
+            FreeResource(vertex_shader_resource);
+        }
+
+        HRSRC fragment_shader_resource_object = FindResource(NULL, MAKEINTRESOURCE(fragment_shader_rsid), (LPCSTR)SHADERS);
+        if (fragment_shader_resource_object == NULL)
+        {
+            debug_handler.post_log(std::string("Unable to open fragment shader resource: ") + std::to_string(fragment_shader_rsid) + " Error code: " + std::to_string(GetLastError()), DEBUG_MODE_ERROR);
+        }
+        else
+        {
+            HGLOBAL fragment_shader_resource = LoadResource(NULL, fragment_shader_resource_object);
+            if (fragment_shader_resource == NULL)
+            {
+                char* error_object = (char*)(LPVOID)fragment_shader_resource_object; 
+                debug_handler.post_log(std::string("Unable to load fragment shader resource: ") +  std::string(error_object) + " Error code: " + std::to_string(GetLastError()), DEBUG_MODE_ERROR);
+            }
+            else 
+            {
+                LPVOID fragment_shader_void = LockResource(fragment_shader_resource);
+                if (fragment_shader_void == NULL)
+                {
+                    char* error_object = (char*)(LPVOID)fragment_shader_resource; 
+                    debug_handler.post_log(std::string("Unable to lock fragment shader resource: ") + std::string(error_object)  + " Error code: " + std::to_string(GetLastError()), DEBUG_MODE_ERROR);
+                }
+                else 
+                {
+                    DWORD fragment_shader_string_size = SizeofResource(NULL, fragment_shader_resource_object);
+                    fragment_shader_string = std::string(static_cast<const char *>(fragment_shader_void), fragment_shader_string_size);
+                    fragment_shader_string += "\n";
+                }
+            }
+            FreeResource(fragment_shader_resource);
+        }
+
+        if (geometry_shader_rsid == 0)
+        {
+            geometry_shader_string = "NONE";
+        }
+        else 
+        {
+            HRSRC geometry_shader_resource_object = FindResource(NULL, MAKEINTRESOURCE(geometry_shader_rsid), (LPCSTR)SHADERS);
+            if (geometry_shader_resource_object == NULL)
+            {
+                debug_handler.post_log(std::string("Unable to open geometry shader resource: ") + std::to_string(geometry_shader_rsid) + " Error code: " + std::to_string(GetLastError()), DEBUG_MODE_ERROR);
+            }
+            else
+            {
+                HGLOBAL geometry_shader_resource = LoadResource(NULL, geometry_shader_resource_object);
+                if (geometry_shader_resource == NULL)
+                {
+                    char* error_object = (char*)(LPVOID)geometry_shader_resource_object; 
+                    debug_handler.post_log(std::string("Unable to load geometry shader resource: ") +  std::string(error_object) + " Error code: " + std::to_string(GetLastError()), DEBUG_MODE_ERROR);
+                }
+                else 
+                {
+                    LPVOID geometry_shader_void = LockResource(geometry_shader_resource);
+                    if (geometry_shader_void == NULL)
+                    {
+                        char* error_object = (char*)(LPVOID)geometry_shader_resource; 
+                        debug_handler.post_log(std::string("Unable to lock geometry shader resource: ") + std::string(error_object)  + " Error code: " + std::to_string(GetLastError()), DEBUG_MODE_ERROR);
+                    }
+                    else 
+                    {
+                        DWORD geometry_shader_string_size = SizeofResource(NULL, geometry_shader_resource_object);
+                        geometry_shader_string = std::string(static_cast<const char *>(geometry_shader_void), geometry_shader_string_size);
+                        geometry_shader_string += "\n";
+                    }
+                }
+                FreeResource(geometry_shader_resource);
+            }
+        }
+
+        add_shader(shader_name, vertex_shader_string, fragment_shader_string, geometry_shader_string);
+    }
+#endif // Windows
+
 /**
  * @brief      Adds a shader to map.
  *
  * @param[in]  shader_name      The shader name.
- * @param[in]  vertex_shader    The vertex shader sorce.
- * @param[in]  fragment_shader  The fragment shader sorce.
- * @param[in]  geometry_shader  The geometry shader sorce.
+ * @param[in]  vertex_shader    The vertex shader source.
+ * @param[in]  fragment_shader  The fragment shader source.
+ * @param[in]  geometry_shader  The geometry shader source.
  */
 void CGUIShaderCompiler::add_shader(const std::string &shader_name, const std::string &vertex_shader, const std::string &fragment_shader, const std::string &geometry_shader)
 {

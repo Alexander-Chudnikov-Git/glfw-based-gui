@@ -82,7 +82,7 @@ CGUIDebugHandler::CGUIDebugHandler(bool clear_base_dir, std::string full_file_pa
 }
 
 /**
- * @brief      Constructs a copy ofndebug handler instance.
+ * @brief      Constructs a copy debugger handler instance.
  *
  * @param[in]  debug_handler  Debug handler to copy.
  */

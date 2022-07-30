@@ -3,7 +3,7 @@
  * @brief      This header file implements CGUIMainWindow class. 
  *             
  *             It is being used in order to create main window, that would 
- *             be populated with ui elements specific for this project.
+ *             be populated with UI elements specific for this project.
  *
  * @author     THE_CHOODICK
  * @date       21-07-2022
@@ -29,7 +29,7 @@
  * Include some important headers.
  */
 #include "glm/glm/glm.hpp"
-#include "glm/glm/gtc/matrix_transform.hpp"
+#include "glm/glm/gtc/matrix_transform.hpp" 
 
 #include "debug_handler/CGUIDebugHandler.hpp"
 #include "shader_compiler/CGUIShaderCompiler.hpp"
@@ -45,12 +45,12 @@
 #include <condition_variable>
 
 /**
- * Some usefull defines for shader compiler.
+ * Some useful defines for shader compiler.
  */
 #define CGUI_SHADER_TRIANDLE "CGUI_SHADER_TRIANDLE"
 
 /**
- * Some usefull defines for window press type.
+ * Some useful defines for window press type.
  */
 #define CGUI_PRESS_TYPE_WINDOW_MOVE                 0
 #define CGUI_PRESS_TYPE_WINDOW_RESIZE_TOP_LEFT      1

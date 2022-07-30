@@ -1,11 +1,9 @@
-#version 330 core
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec3 aColor;
+#version 330 compatibility
 
-out vec3 ourColor;
+out vec4 normal;
 
 void main()
-{
-    gl_Position = vec4(aPos, 1.0);
-    ourColor = aColor;
+{   
+  gl_Position = gl_Vertex;
+  normal =  vec4(gl_Normal.xyz, 0.0);
 }

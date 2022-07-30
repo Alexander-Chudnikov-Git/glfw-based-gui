@@ -3,7 +3,7 @@
  * @brief      This source file implements CGUIMainWindow class. 
  *             
  *             It is being used in order to create main window, that would 
- *             be populated with ui elements specific for this project.
+ *             be populated with UI elements specific for this project.
  *
  * @author     THE_CHOODICK
  * @date       22-07-2022
@@ -223,9 +223,15 @@ bool CGUIMainWindow::initialize(std::string main_window_name_arg, bool vertical_
  */
 bool CGUIMainWindow::initialize_renderer()
 {
-    shaders = new CGUIShaderCompiler(CGUI_SHADER_TRIANDLE, triangle_vertext_file_path, triangle_fragment_file_path, triangle_geometry_file_path);
+    #if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
+        shaders = new CGUIShaderCompiler(CGUI_SHADER_TRIANDLE, GBG_VERT_SHADER_0, GBG_FRAG_SHADER_0, GBG_GEOM_SHADER_0);
+    #endif // Windows
+    #ifdef __APPLE__
+        shaders = new CGUIShaderCompiler(CGUI_SHADER_TRIANDLE, triangle_vertext_file_path, triangle_fragment_file_path, triangle_geometry_file_path);
+    #endif //__APPLE__
+    
 
-    // ... VBO impl
+    // ... VBO implementation
 
     return true;
 }
@@ -351,7 +357,7 @@ void CGUIMainWindow::frame_renderer_wrapper()
 }
 
 /**
- * @brief      Switches widnow mode to fullscreen
+ * @brief      Switches window mode to fullscreen
  */
 void CGUIMainWindow::set_fullscreen_mode()
 {
@@ -368,7 +374,7 @@ void CGUIMainWindow::set_fullscreen_mode()
 }
 
 /**
- * @brief      Switches widnow mode to windowed
+ * @brief      Switches window mode to windowed
  */
 void CGUIMainWindow::set_windowed_mode()
 {   
@@ -385,7 +391,7 @@ void CGUIMainWindow::set_windowed_mode()
 }
 
 /**
- * @brief      Switches widnow mode
+ * @brief      Switches window mode
  */
 void CGUIMainWindow::switch_window_mode()
 {
@@ -498,7 +504,7 @@ glm::dvec2 CGUIMainWindow::get_global_mouse_position(GLFWwindow* window)
  * @param[in]  rect_br  Bottom right point of rectangle.
  * @param[in]  point    Point, that should be checked for collision.
  *
- * @return     Is rectangle given by first 2 arguments colides with point, given as third parameter.
+ * @return     Is rectangle given by first 2 arguments collides with point, given as third parameter.
  */
 bool CGUIMainWindow::collision(glm::ivec2 rect_tl, glm::ivec2 rect_br, glm::ivec2 point)
 {
@@ -568,7 +574,7 @@ uint8_t CGUIMainWindow::assert_window_press_type(glm::dvec2 press_position)
 }
 
 /**
- * @brief      Implementation for simoultaneous resize of position and size of the window.
+ * @brief      Implementation for simultaneous resize of position and size of the window.
  *
  * @param[in]  pos   New position.
  * @param[in]  size  New size.
@@ -649,7 +655,7 @@ void CGUIMainWindow::key_callback(GLFWwindow* window, int key, int scan_code, in
                         global_mouse_position = main_window_handler->get_global_mouse_position(main_window_handler->main_window);
                         main_window_handler->debug_handler.post_log("", DEBUG_MODE_NONE);
                         main_window_handler->debug_handler.post_log("/ DEBUG INFO START", DEBUG_MODE_MESSAGE);
-                        main_window_handler->debug_handler.post_log(std::string("| Time passed since programm started: " + std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - main_window_handler->program_start_time).count()) + "ms"), DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log(std::string("| Time passed since program started: " + std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - main_window_handler->program_start_time).count()) + "ms"), DEBUG_MODE_NONE);
                         main_window_handler->debug_handler.post_log(std::string("| Time required to process last events: " + std::to_string(main_window_handler->last_frame_event_time) + "ms"), DEBUG_MODE_NONE);
                         main_window_handler->debug_handler.post_log(std::string("| Time required to render last frame: " + std::to_string(main_window_handler->last_frame_render_time) + "ms"), DEBUG_MODE_NONE);
                         main_window_handler->debug_handler.post_log(std::string("| Rough estimation of fps: " + std::to_string(1000.0f / main_window_handler->last_frame_render_time) + "fps"), DEBUG_MODE_NONE);
@@ -660,7 +666,7 @@ void CGUIMainWindow::key_callback(GLFWwindow* window, int key, int scan_code, in
                         main_window_handler->debug_handler.post_log(std::string("| Current window size: x=" + std::to_string(window_size.x) + " y=" + std::to_string(window_size.y)), DEBUG_MODE_NONE);
                         main_window_handler->debug_handler.post_log(std::string("| Current cursor local position: x=" + std::to_string(local_mouse_position.x) + " y=" + std::to_string(local_mouse_position.y)), DEBUG_MODE_NONE);
                         main_window_handler->debug_handler.post_log(std::string("| Current cursor global position: x=" + std::to_string(global_mouse_position.x) + " y=" + std::to_string(global_mouse_position.y)), DEBUG_MODE_NONE);
-                        main_window_handler->debug_handler.post_log(std::string("| Current window mode: " + std::string((main_window_handler->full_screen == true) ? "Fullscreen" : "Winowed")), DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log(std::string("| Current window mode: " + std::string((main_window_handler->full_screen == true) ? "Fullscreen" : "Windowed")), DEBUG_MODE_NONE);
                         main_window_handler->debug_handler.post_log(std::string("| Current window decoration: " + std::string((glfwGetWindowAttrib(main_window_handler->main_window, GLFW_DECORATED) == true) ? "Decorated" : "Not Decorated")), DEBUG_MODE_NONE);
                         main_window_handler->debug_handler.post_log(std::string("| Current window floating: " + std::string((glfwGetWindowAttrib(main_window_handler->main_window, GLFW_FLOATING) == true) ? "Floating" : "Not Floating")), DEBUG_MODE_NONE);
                         main_window_handler->debug_handler.post_log(std::string("| Current window visible: " + std::string((glfwGetWindowAttrib(main_window_handler->main_window, GLFW_VISIBLE) == true) ? "Visible" : "Not Visible")), DEBUG_MODE_NONE);
@@ -739,7 +745,7 @@ void CGUIMainWindow::character_callback(GLFWwindow* window, unsigned int charact
  * @brief      Cursor position callback handler.
  *
  * @param      window  Window pointer.
- * @param[in]  xpos    X coodriante mouse position.
+ * @param[in]  xpos    X coordinate mouse position.
  * @param[in]  ypos    Y coordinate mouse position.
  */
 void CGUIMainWindow::cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
@@ -1049,11 +1055,11 @@ void CGUIMainWindow::scroll_callback(GLFWwindow* window, double xoffset, double 
 }
 
 /**
- * @brief      Framebuffer resize handler.
+ * @brief      Frame buffer resize handler.
  * 
  * @param      window   Window pointer.
- * @param[in]  width    Framebuffer width.
- * @param[in]  height   Framebuffer height.
+ * @param[in]  width    Frame buffer width.
+ * @param[in]  height   Frame buffer height.
  */
 void CGUIMainWindow::framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
