@@ -92,8 +92,18 @@ CGUIShaderCompiler::~CGUIShaderCompiler()
     shader_list.clear();
 }
 
+
+/**
+ * @brief      Compiles a new instance of shader program.
+ *
+ * @param[in]  vertex_shader_rsid   The vertex shader source.
+ * @param[in]  fragment_shader_rsid The fragment shader source.
+ * @param[in]  geometry_shader_rsid The geometry shader source.
+ */
 GLuint CGUIShaderCompiler::compile_shader(const std::string& vertex_shader, const std::string& fragment_shader, const std::string& geometry_shader)
 {
+    int init_status = 0;
+
     GLuint compiled_vertex;
     GLuint compiled_fragment;
     GLuint compiled_geometry;
@@ -108,68 +118,72 @@ GLuint CGUIShaderCompiler::compile_shader(const std::string& vertex_shader, cons
     const char *source_buffer = vertex_shader.c_str();
     glad_glShaderSource(compiled_vertex, 1, (const GLchar**)&source_buffer, NULL);
     glCompileShader(compiled_vertex);
-    if(!check_for_errors(compiled_vertex, "VERTEX"))
+    if(check_for_errors(compiled_vertex, "VERTEX"))
     {
-        glDeleteShader(compiled_vertex);
-        return 0;
-    }
+        glAttachShader(id, compiled_vertex);
 
-    glAttachShader(id, compiled_vertex);
+        init_status = 1;
 
-    compiled_fragment = glCreateShader(GL_FRAGMENT_SHADER);
-    source_buffer = fragment_shader.c_str();
-    glShaderSource(compiled_fragment, 1, (const GLchar**)&source_buffer, NULL);
-    glCompileShader(compiled_fragment);
-    if(!check_for_errors(compiled_fragment, "FRAGMENT"))
-    {
-        glDetachShader(id, compiled_vertex);
-        glDeleteShader(compiled_vertex);
-        glDeleteShader(compiled_fragment);
-        return 0;
-    }
-
-    glAttachShader(id, compiled_fragment);
-
-    compiled_geometry = glCreateShader(GL_GEOMETRY_SHADER);
-    if (std::strcmp(geometry_shader.c_str(), "NONE") != 0)
-    {
-        source_buffer = geometry_shader.c_str();
-        glShaderSource(compiled_geometry, 1, (const GLchar**)&source_buffer, NULL);
-        glCompileShader(compiled_geometry);
-        if(!check_for_errors(compiled_geometry, "GEOMETRY"))
+        compiled_fragment = glCreateShader(GL_FRAGMENT_SHADER);
+        source_buffer = fragment_shader.c_str();
+        glShaderSource(compiled_fragment, 1, (const GLchar**)&source_buffer, NULL);
+        glCompileShader(compiled_fragment);
+        if(check_for_errors(compiled_fragment, "FRAGMENT"))
         {
-            glDetachShader(id, compiled_vertex);
-            glDeleteShader(compiled_vertex);
-            glDetachShader(id, compiled_fragment);
-            glDeleteShader(compiled_fragment);
-            glDeleteShader(compiled_geometry);
-            return 0;
-        }
+            glAttachShader(id, compiled_fragment);
 
-        glAttachShader(id, compiled_geometry);
+            init_status = 2;
+
+            compiled_geometry = glCreateShader(GL_GEOMETRY_SHADER);
+            if (std::strcmp(geometry_shader.c_str(), "NONE") != 0)
+            {
+                source_buffer = geometry_shader.c_str();
+                glShaderSource(compiled_geometry, 1, (const GLchar**)&source_buffer, NULL);
+                glCompileShader(compiled_geometry);
+                if(check_for_errors(compiled_geometry, "GEOMETRY"))
+                {
+                    glAttachShader(id, compiled_geometry);
+
+                    init_status = 3;
+                }
+                else 
+                {
+                    id = 0;
+                }          
+            }
+        }
+        else 
+        {
+            id = 0;
+        }
+    }
+    else 
+    {
+        id = 0;
+    }
+    glDeleteShader(compiled_vertex);
+    
+    if (id != 0)
+    {
+        glLinkProgram(id);
+
+        if(!check_for_errors(id, "PROGRAM"))
+        {
+           id = 0;
+        }
     }
 
-    glLinkProgram(id);
-
-    if(!check_for_errors(id, "PROGRAM"))
+    if (init_status == 1)
     {
         glDetachShader(id, compiled_vertex);
         glDeleteShader(compiled_vertex);
+    }
+    if (init_status == 2)
+    {
         glDetachShader(id, compiled_fragment);
         glDeleteShader(compiled_fragment);
-        if (std::strcmp(geometry_shader.c_str(), "NONE") != 0)
-        {
-            glDetachShader(id, compiled_geometry);
-            glDeleteShader(compiled_geometry);
-        }
-        return 0;
     }
-
-    glDetachShader(id, compiled_vertex);
-    glDeleteShader(compiled_vertex);
-    glDetachShader(id, compiled_fragment);
-    glDeleteShader(compiled_fragment);
-    if (std::strcmp(geometry_shader.c_str(), "NONE") != 0)
+    if (init_status == 3)
     {
         glDetachShader(id, compiled_geometry);
         glDeleteShader(compiled_geometry);
