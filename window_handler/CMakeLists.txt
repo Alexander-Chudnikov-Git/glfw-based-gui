@@ -18,6 +18,7 @@ target_include_directories(window_handler PUBLIC glad/ glfw/ glm/
 	debug_handler/ vertex_specification/vbo_handler/ 
 	vertex_specification/vao_handler/
 	vertex_specification/ebo_handler/ shader_compiler/)							# Link include directories
+
 target_link_directories(window_handler PUBLIC glad/ glfw/ glm/ 
 	debug_handler/ vertex_specification/vbo_handler/ 
 	vertex_specification/vao_handler/ 
