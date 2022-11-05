@@ -40,8 +40,8 @@
 //    #include <windows.h>
 //#endif
 
-#include "../glm/glm/glm.hpp"
-#include "../glm/glm/gtc/matrix_transform.hpp"
+#include "../object_renderer/glm/glm/glm.hpp"
+#include "../object_renderer/glm/glm/gtc/matrix_transform.hpp"
 
 #include "../debug_handler/CGUIDebugHandler.hpp"
 

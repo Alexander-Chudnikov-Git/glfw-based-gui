@@ -1,6 +1,6 @@
 /**
- * @file       <CGUIVertexSpecification.hpp>
- * @brief      This source file implements CGUIVertexSpecification class. 
+ * @file       <CGUIObjectRenderer.cpp>
+ * @brief      This source file implements CGUIObjectRenderer class. 
  *             
  *             It is being used in order to create main window, that would 
  *             be populated with UI elements specific for this project.
@@ -22,24 +22,4 @@
  * 
  * @todo       Implement the whole class.
  */
-#ifndef CGUIVERTEXSPECIFICATION_HPP
-#define CGUIVERTEXSPECIFICATION_HPP
-
-#include "./ebo_handler/CGUIEBOHandler.hpp"
-#include "./vao_handler/CGUIVAOHandler.hpp"
-
-
-class CGUIObjectRenderer
-{
-public:
-    CGUIObjectRenderer();
-
-    void add_object(CGUIObject new_object);
-    void draw();
-
-
-private:
-
-};
-
-#endif // CGUIVERTEXSPECIFICATION_HPP
+#include "CGUIObjectRenderer.hpp"

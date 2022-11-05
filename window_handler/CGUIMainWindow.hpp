@@ -33,9 +33,7 @@
 
 #include "debug_handler/CGUIDebugHandler.hpp"
 #include "shader_compiler/CGUIShaderCompiler.hpp"
-#include "object_renderer/vbo_handler/CGUIVBOHandler.hpp"
-#include "object_renderer/vao_handler/CGUIVAOHandler.hpp"
-#include "object_renderer/ebo_handler/CGUIEBOHandler.hpp"
+#include "object_renderer/CGUIObjectRenderer.hpp"
 
 #include <sys/stat.h>
 #include <chrono>

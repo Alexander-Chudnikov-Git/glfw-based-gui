@@ -30,7 +30,7 @@
  */
 #include "../../glad/glad.h"
 #include "../../glfw/include/GLFW/glfw3.h"
-#include "../../glm/glm/glm.hpp"
+#include "../../object_renderer/glm/glm/glm.hpp"
 
 #include <vector>
 
