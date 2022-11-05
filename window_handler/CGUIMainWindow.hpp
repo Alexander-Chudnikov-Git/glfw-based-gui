@@ -33,9 +33,9 @@
 
 #include "debug_handler/CGUIDebugHandler.hpp"
 #include "shader_compiler/CGUIShaderCompiler.hpp"
-#include "vertex_specification/vbo_handler/CGUIVBOHandler.hpp"
-#include "vertex_specification/vao_handler/CGUIVAOHandler.hpp"
-#include "vertex_specification/ebo_handler/CGUIEBOHandler.hpp"
+#include "object_renderer/vbo_handler/CGUIVBOHandler.hpp"
+#include "object_renderer/vao_handler/CGUIVAOHandler.hpp"
+#include "object_renderer/ebo_handler/CGUIEBOHandler.hpp"
 
 #include <sys/stat.h>
 #include <chrono>
@@ -47,7 +47,7 @@
 /**
  * Some useful defines for shader compiler.
  */
-#define CGUI_SHADER_TRIANDLE "CGUI_SHADER_TRIANDLE"
+#define CGUI_SHADER_TRIANDLE __CGUI_OBF__("CGUI_SHADER_TRIANDLE")
 
 /**
  * Some useful defines for window press type.
@@ -81,7 +81,7 @@ public:
     void close();
 
 private:
-    bool initialize(std::string main_window_name_arg = "CGUI Default Window", bool vertical_sync_arg = false, bool full_screen_arg = false);
+    bool initialize(std::string main_window_name_arg = __CGUI_OBF__("CGUI Default Window"), bool vertical_sync_arg = false, bool full_screen_arg = false);
     bool initialize_renderer();
     
     void update_thread();
@@ -152,9 +152,9 @@ private:
     glm::ivec2 window_size_min      = {480, 240};
     glm::ivec2 last_window_position = {0, 0};
 
-    fs::path triangle_vertext_file_path     = "cgui_tri_vert.vs";
-    fs::path triangle_fragment_file_path    = "cgui_tri_frag.fs";
-    fs::path triangle_geometry_file_path    = "";                    // cgui_tri_geom.gs
+    fs::path triangle_vertext_file_path     = __CGUI_OBF__("cgui_tri_vert.vs");
+    fs::path triangle_fragment_file_path    = __CGUI_OBF__("cgui_tri_frag.fs");
+    fs::path triangle_geometry_file_path    = __CGUI_OBF__("");                    // cgui_tri_geom.gs
 
     std::thread* render_thread;
 

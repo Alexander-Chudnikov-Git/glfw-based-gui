@@ -34,7 +34,21 @@
 
 class CGUIVAO 
 {
+public: 
+    CGUIVAO(bool is_buffer_static = false);
+    ~CGUIVAO();
+
+    void bind();
+    void unbind();
+    void destroy();
     
+    bool is_static();
+
+    void link_attributes(CGUIVBO& VBO, GLuint layout, GLuint components_number, GLenum type, GLsizeiptr byte_offset, void* offset);
+
+private:
+    bool    buffer_static;
+    GLuint  buffer_id;
 };
 
 #endif // CGUIVAOHANDLER_HPP

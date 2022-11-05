@@ -66,6 +66,8 @@
 // Headers for time 
 #include <ctime>
 
+#include "../protection/CGUIProtection.hpp"
+
 #ifdef __APPLE__
     //#include <CoreFoundation/CoreFoundation.h>
     namespace fs = std::__fs::filesystem;
@@ -85,7 +87,7 @@
 class CGUIDebugHandler
 {
 public:
-    CGUIDebugHandler(bool clear_base_dir = true, std::string full_file_path = "");
+    CGUIDebugHandler(bool clear_base_dir = true, std::string full_file_path = __CGUI_OBF__(""));
     CGUIDebugHandler(const CGUIDebugHandler&);
     ~CGUIDebugHandler();
 
@@ -96,7 +98,7 @@ public:
     CGUIDebugHandler& operator=(CGUIDebugHandler&& debug_handler);
 
 private:
-    void clear_log(fs::path log_file_directory = "");
+    void clear_log(fs::path log_file_directory = __CGUI_OBF__(""));
 
     std::string fill_zeros(int input_num, int num_offset);
 

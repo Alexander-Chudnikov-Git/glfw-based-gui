@@ -132,19 +132,19 @@ public:
      *
      * @return     Encrypted string
      */
-    template <std::size_t STRING_LENGTH, std::size_t KEY_LENGTH>
-        static constexpr const std::array<char, STRING_LENGTH + 2 + (STRING_LENGTH % 2)> string_encrypt(const char* initial_string, std::array<char, KEY_LENGTH> key)
+    template <typename T, std::size_t STRING_LENGTH, std::size_t KEY_LENGTH>
+        static constexpr const std::array<T, STRING_LENGTH + 2 + (STRING_LENGTH % 2)> string_encrypt(const T* initial_string, std::array<T, KEY_LENGTH> key)
         {
             std::size_t new_buffer_length = STRING_LENGTH + (2 + (STRING_LENGTH % 2));
 
-            std::array<char, STRING_LENGTH + 2 + (STRING_LENGTH % 2)> encryptred_data{0};
-            std::array<char, STRING_LENGTH + 2 + (STRING_LENGTH % 2)> encryption_buffer{0};
+            std::array<T, STRING_LENGTH + 2 + (STRING_LENGTH % 2)> encryptred_data{0};
+            std::array<T, STRING_LENGTH + 2 + (STRING_LENGTH % 2)> encryption_buffer{0};
 
             for(std::size_t index = 0; index < new_buffer_length; ++index)
             {
                 if (index >= STRING_LENGTH)
                 {
-                    encryption_buffer[index] = key[new_buffer_length % KEY_LENGTH] ^ key[0];
+                    encryption_buffer[index] = key[new_buffer_length % KEY_LENGTH] ^ key[(index - STRING_LENGTH) * 3];
                 }
                 else 
                 {
@@ -160,7 +160,7 @@ public:
 
             for(std::size_t index = 0; index < new_buffer_length; ++index)
             {
-                encryptred_data[index] = encryptred_data[index] ^ (key[index % (KEY_LENGTH / sizeof(char))] + index);
+                encryptred_data[index] = encryptred_data[index] ^ (key[index % (KEY_LENGTH / sizeof(T))] + index);
             }
 
             return encryptred_data;
@@ -168,6 +168,8 @@ public:
 
     /**
      * @brief       Decrypts string at comple time
+     * 
+     *              Basically, it is just XOR cipher with bit alignment and some reshufelling.
      *
      * @param       initial_string  The initial string
      * @param       string_length   Length on the initial string 
@@ -177,18 +179,18 @@ public:
      *
      * @return      Decrypts string
      */
-    template <std::size_t STRING_LENGTH, std::size_t KEY_LENGTH>
-        static inline const std::array<char, STRING_LENGTH> string_decrypt(std::array<char, STRING_LENGTH + 2 + (STRING_LENGTH % 2)> initial_string, std::array<char, KEY_LENGTH> key)
+    template <typename T, std::size_t STRING_LENGTH, std::size_t KEY_LENGTH>
+        static inline const std::array<T, STRING_LENGTH> string_decrypt(std::array<T, STRING_LENGTH + 2 + (STRING_LENGTH % 2)> initial_string, std::array<T, KEY_LENGTH> key)
         {
             std::size_t new_buffer_length = STRING_LENGTH + 2 + (STRING_LENGTH % 2);
 
-            std::array<char, STRING_LENGTH> decryptred_data{0};
-            char* decryptred_buffer = new char[new_buffer_length]; 
-            char* decryptred_mid_buffer = new char[new_buffer_length]; 
+            std::array<T, STRING_LENGTH> decryptred_data{0};
+            T* decryptred_buffer = new T[new_buffer_length]; 
+            T* decryptred_mid_buffer = new T[new_buffer_length]; 
 
             for(std::size_t index = 0; index < new_buffer_length; ++index)
             {
-                decryptred_buffer[index] = initial_string[index] ^ (key[index % (KEY_LENGTH / sizeof(char))] + index);
+                decryptred_buffer[index] = initial_string[index] ^ (key[index % (KEY_LENGTH / sizeof(T))] + index);
             }
 
             for(std::size_t index = 0; index < new_buffer_length; index += 2)
@@ -201,9 +203,9 @@ public:
             {
                 if (index >= STRING_LENGTH)
                 {
-                    if (decryptred_mid_buffer[index] != (key[new_buffer_length % KEY_LENGTH] ^ key[0]))
+                    if (decryptred_mid_buffer[index] != (key[new_buffer_length % KEY_LENGTH] ^ key[(index - STRING_LENGTH) * 3]))
                     {
-                        auto temp = CGUIObfuscatedString::cgi_r<char, STRING_LENGTH, STRING_LENGTH>();
+                        auto temp = CGUIObfuscatedString::cgi_r<T, STRING_LENGTH, STRING_LENGTH>();
 
                         for(std::size_t index_inside = 0; index_inside < STRING_LENGTH; ++index_inside)
                         {
@@ -304,22 +306,36 @@ protected:
 
 #ifndef __CGUI_OBF_KEY__
     #define __CGUI_OBF_KEY__ CGUIObfuscatedString::cgi_r<char, 64, 0>()
+    #define __CGUI_WOBF_KEY__ CGUIObfuscatedString::cgi_r<wchar_t, 64, 0>()
 #endif
 
 #ifndef __CGUI_OBF_KEY_C__
     #define __CGUI_OBF_KEY_C__(line) CGUIObfuscatedString::cgi_r<char, 64, line>()
+    #define __CGUI_WOBF_KEY_C__(line) CGUIObfuscatedString::cgi_r<wchar_t, 64, line>()
 #endif
 
 #define __CGUI_OBF_GENERIC__(data, key) \
     []() -> std::string { \
         constexpr auto str_len = (__builtin_strlen(data)); \
         constexpr auto key_len = key.size(); \
-        constexpr auto encrypted_data = CGUIObfuscatedString::string_encrypt<str_len, key_len>(data, key); \
-        thread_local auto obfuscated_data = CGUIObfuscatedString::string_decrypt<str_len, key_len>(encrypted_data, key); \
+        constexpr auto encrypted_data = CGUIObfuscatedString::string_encrypt<char, str_len, key_len>(data, key); \
+        thread_local auto obfuscated_data = CGUIObfuscatedString::string_decrypt<char, str_len, key_len>(encrypted_data, key); \
         return std::string(obfuscated_data.cbegin(), obfuscated_data.cend()); \
+    }()
+
+#define __CGUI_WOBF_GENERIC__(data, key) \
+    []() -> std::wstring { \
+        constexpr auto str_len = std::char_traits<wchar_t>::length(data); \
+        constexpr auto key_len = key.size(); \
+        constexpr auto encrypted_data = CGUIObfuscatedString::string_encrypt<wchar_t, str_len, key_len>(data, key); \
+        thread_local auto obfuscated_data = CGUIObfuscatedString::string_decrypt<wchar_t, str_len, key_len>(encrypted_data, key); \
+        return std::wstring(obfuscated_data.cbegin(), obfuscated_data.cend()); \
     }()
 
 // Those defines are only usable with static strings, it is not sutable for encrypting runtime variables
 #define __CGUI_OBF__(data) __CGUI_OBF_GENERIC__(data, __CGUI_OBF_KEY__)
 #define __CGUI_OBF_S__(data) __CGUI_OBF_GENERIC__(data, __CGUI_OBF_KEY_C__(__COUNTER__ + 1))
+
+#define __CGUI_WOBF__(data) __CGUI_WOBF_GENERIC__(data, __CGUI_WOBF_KEY__)
+#define __CGUI_WOBF_S__(data) __CGUI_WOBF_GENERIC__(data, __CGUI_WOBF_KEY_C__(__COUNTER__ + 1))
 #endif // CGUIPROTECTION_HPP

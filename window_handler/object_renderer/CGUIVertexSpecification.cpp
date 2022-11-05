@@ -1,9 +1,9 @@
 /**
- * @file       <CGUIVBOHandler.cpp>
- * @brief      This source file implements CGUIVBOHandler class. 
+ * @file       <CGUIVertexSpecification.cpp>
+ * @brief      This source file implements CGUIVertexSpecification class. 
  *             
- *             It is being used in order to initialize eiter static or dynamic 
- *             vbo, that later can be used in order to draw objects via GLFW.
+ *             It is being used in order to create main window, that would 
+ *             be populated with UI elements specific for this project.
  *
  * @author     THE_CHOODICK
  * @date       30-07-2022
@@ -22,4 +22,4 @@
  * 
  * @todo       Implement the whole class.
  */
-#include "CGUIVAOHandler.hpp"
+#include "CGUIVertexSpecification.hpp"

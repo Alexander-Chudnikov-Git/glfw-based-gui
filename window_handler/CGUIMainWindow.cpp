@@ -41,21 +41,19 @@ CGUIMainWindow::CGUIMainWindow()
     debug_handler = CGUIDebugHandler(main_debug_handler);
 	if (!initialize())
     {
-        debug_handler.post_log("Unable to initialize CGUI.", DEBUG_MODE_ERROR);
+        debug_handler.post_log(__CGUI_OBF__("Unable to initialize CGUI."), DEBUG_MODE_ERROR);
         close();
     }
 
-    debug_handler.post_log("CGUI has been initialized successfully.", DEBUG_MODE_LOG);
+    debug_handler.post_log(__CGUI_OBF__("CGUI has been initialized successfully."), DEBUG_MODE_LOG);
 
     if (!initialize_renderer())
     {
-        debug_handler.post_log("Unable to initialize renderer.", DEBUG_MODE_ERROR);
+        debug_handler.post_log(__CGUI_OBF__("Unable to initialize renderer."), DEBUG_MODE_ERROR);
         close();
     }
 
-    debug_handler.post_log("Renderer has been initialized successfully.", DEBUG_MODE_LOG);
-
-    CGUIShaderCompiler tesm;
+    debug_handler.post_log(__CGUI_OBF__("Renderer has been initialized successfully."), DEBUG_MODE_LOG);
 
     update_thread();
 
@@ -91,7 +89,8 @@ void CGUIMainWindow::hide()
  */
 void CGUIMainWindow::close()
 {
-    debug_handler.post_log("Window has been closed.", DEBUG_MODE_LOG);
+    debug_handler.post_log(__CGUI_OBF__("Window has been closed."), DEBUG_MODE_LOG);
+    glfwSetWindowShouldClose(main_window, GLFW_TRUE);
     glfwTerminate();
     exit(EXIT_SUCCESS);
     return;
@@ -115,20 +114,20 @@ bool CGUIMainWindow::initialize(std::string main_window_name_arg, bool vertical_
     vertical_sync = vertical_sync_arg;
     full_screen = full_screen_arg;
 
-    debug_handler.post_log("CGUI Initialization has started.", DEBUG_MODE_LOG);
+    debug_handler.post_log(__CGUI_OBF__("CGUI Initialization has started."), DEBUG_MODE_LOG);
 
     // Add ini settings loader 
-    debug_handler.post_log("Ini file has been loaded.", DEBUG_MODE_LOG);
+    debug_handler.post_log(__CGUI_OBF__("Ini file has been loaded."), DEBUG_MODE_LOG);
 
     glfwSetErrorCallback(CGUIDebugHandler::glfw_error_callback);
 
     if (!glfwInit())
     {
-        debug_handler.post_log("Unable to initialize GLWF.", DEBUG_MODE_ERROR);
+        debug_handler.post_log(__CGUI_OBF__("Unable to initialize GLWF."), DEBUG_MODE_ERROR);
         return false;
     }
 
-    debug_handler.post_log("GLFW has been initialized.", DEBUG_MODE_LOG);
+    debug_handler.post_log(__CGUI_OBF__("GLFW has been initialized."), DEBUG_MODE_LOG);
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -152,7 +151,7 @@ bool CGUIMainWindow::initialize(std::string main_window_name_arg, bool vertical_
     glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
     glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
 
-    debug_handler.post_log("Window hints have been set.", DEBUG_MODE_LOG);
+    debug_handler.post_log(__CGUI_OBF__("Window hints have been set."), DEBUG_MODE_LOG);
 
     main_window = glfwCreateWindow(last_window_size.x, last_window_size.y, main_window_name.c_str(), NULL, NULL);
 
@@ -165,18 +164,18 @@ bool CGUIMainWindow::initialize(std::string main_window_name_arg, bool vertical_
     // Create invisible window in order to get mouse position
     if (full_screen)
     {
-        debug_handler.post_log("Full screen window is being created.", DEBUG_MODE_LOG);
+        debug_handler.post_log(__CGUI_OBF__("Full screen window is being created."), DEBUG_MODE_LOG);
         set_fullscreen_mode();
     }
     else 
     {
-        debug_handler.post_log("Normal window is being created.", DEBUG_MODE_LOG);
+        debug_handler.post_log(__CGUI_OBF__("Normal window is being created."), DEBUG_MODE_LOG);
         set_windowed_mode();
     }
 
     if (main_window == NULL)
     {
-        debug_handler.post_log("Unable to properly create window.", DEBUG_MODE_ERROR);
+        debug_handler.post_log(__CGUI_OBF__("Unable to properly create window."), DEBUG_MODE_ERROR);
         return false;
     }
 
@@ -184,7 +183,7 @@ bool CGUIMainWindow::initialize(std::string main_window_name_arg, bool vertical_
 
     glfwSetWindowShouldClose(main_window, GLFW_FALSE);
 
-    debug_handler.post_log("Window has been created.", DEBUG_MODE_LOG);
+    debug_handler.post_log(__CGUI_OBF__("Window has been created."), DEBUG_MODE_LOG);
 
     glfwSetWindowUserPointer(main_window, reinterpret_cast<void *>(this));
 
@@ -199,12 +198,12 @@ bool CGUIMainWindow::initialize(std::string main_window_name_arg, bool vertical_
     glfwSetFramebufferSizeCallback(main_window, framebuffer_size_callback);  
     glfwSetWindowSizeCallback(main_window, window_size_callback);
 
-    debug_handler.post_log("Callback have been initialized.", DEBUG_MODE_LOG);
+    debug_handler.post_log(__CGUI_OBF__("Callback have been initialized."), DEBUG_MODE_LOG);
 
     glfwMakeContextCurrent(main_window);
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
-        debug_handler.post_log("Unable to properly initialize GLAD.", DEBUG_MODE_ERROR);
+        debug_handler.post_log(__CGUI_OBF__("Unable to properly initialize GLAD."), DEBUG_MODE_ERROR);
         return false;
     }
 
@@ -249,13 +248,11 @@ void CGUIMainWindow::update_thread()
     
     update_events();
 
-    while (!glfwWindowShouldClose(main_window))
+    if (render_thread->joinable())
     {
-        if (render_thread->joinable())
-        {
-            render_thread->join(); 
-        }
+        render_thread->join(); 
     }
+
     return;
 }
 
@@ -350,7 +347,7 @@ void CGUIMainWindow::frame_renderer_wrapper()
     std::stringstream thread_id;
     thread_id << std::this_thread::get_id();
 
-    this->debug_handler.post_log(std::string("Renderer wrapper has been assigned to thread: ") + std::to_string(std::stoi(thread_id.str())), DEBUG_MODE_LOG);
+    this->debug_handler.post_log(std::string(__CGUI_OBF__("Renderer wrapper has been assigned to thread: ")) + std::to_string(std::stoi(thread_id.str())), DEBUG_MODE_LOG);
 
     this->render_frames();
     return;
@@ -363,7 +360,7 @@ void CGUIMainWindow::set_fullscreen_mode()
 {
     glfwGetWindowSize(main_window, &last_window_size.x, &last_window_size.y);
     glfwGetWindowPos(main_window, &last_window_position.x, &last_window_position.y);
-    debug_handler.post_log("Window mode has been set to fullscreen.", DEBUG_MODE_LOG);
+    debug_handler.post_log(__CGUI_OBF__("Window mode has been set to fullscreen."), DEBUG_MODE_LOG);
     full_screen = true;
 
     current_monitor = get_monitor_by_cpos(get_global_mouse_position(main_window));
@@ -379,7 +376,7 @@ void CGUIMainWindow::set_fullscreen_mode()
 void CGUIMainWindow::set_windowed_mode()
 {   
     glfwHideWindow(main_window);
-    debug_handler.post_log("Window mode has been set to windowed.", DEBUG_MODE_LOG);
+    debug_handler.post_log(__CGUI_OBF__("Window mode has been set to windowed."), DEBUG_MODE_LOG);
     full_screen = false;
 
     current_monitor = get_monitor_by_cpos(get_global_mouse_position(main_window));
@@ -431,7 +428,7 @@ GLFWmonitor* CGUIMainWindow::get_monitor_by_cpos(glm::dvec2 cursor_position)
         {
             return monitors[current_monitor_id];  
         }
-        //debug_handler.post_log(std::string("Monitor: ") + glfwGetMonitorName(monitors[current_monitor_id]) + std::string(" position: x-") + std::to_string(cursor_position.x) + std::string(" y-") + std::to_string(cursor_position.y), DEBUG_MODE_LOG);
+        //debug_handler.post_log(std::string(__CGUI_OBF__("Monitor: ")) + glfwGetMonitorName(monitors[current_monitor_id]) + std::string(__CGUI_OBF__(" position: x-")) + std::to_string(cursor_position.x) + std::string(__CGUI_OBF__(" y-")) + std::to_string(cursor_position.y), DEBUG_MODE_LOG);
     }
     return NULL;
 }
@@ -471,7 +468,7 @@ GLFWmonitor* CGUIMainWindow::get_current_monitor(GLFWwindow *window)
             best_current_monitor = monitors[current_monitor_id];
         }
         
-        //debug_handler.post_log(std::string("Monitor: ") + glfwGetMonitorName(monitors[current_monitor_id]) + std::string(" position: x-") + std::to_string(cursor_position.x) + std::string(" y-") + std::to_string(cursor_position.y), DEBUG_MODE_LOG);
+        //debug_handler.post_log(std::string(__CGUI_OBF__("Monitor: ")) + glfwGetMonitorName(monitors[current_monitor_id]) + std::string(__CGUI_OBF__(" position: x-")) + std::to_string(cursor_position.x) + std::string(__CGUI_OBF__(" y-")) + std::to_string(cursor_position.y), DEBUG_MODE_LOG);
     }
     return best_current_monitor;
 }
@@ -492,7 +489,7 @@ glm::dvec2 CGUIMainWindow::get_global_mouse_position(GLFWwindow* window)
 
     cursor_position += window_position;  
 
-    //debug_handler.post_log(std::string("Global mouse position: x-") + std::to_string(cursor_position.x) + std::string(" y-") + std::to_string(cursor_position.y), DEBUG_MODE_LOG);
+    //debug_handler.post_log(std::string(__CGUI_OBF__("Global mouse position: x-")) + std::to_string(cursor_position.x) + std::string(__CGUI_OBF__(" y-")) + std::to_string(cursor_position.y), DEBUG_MODE_LOG);
 
     return cursor_position;
 }
@@ -589,7 +586,6 @@ void CGUIMainWindow::resize_window_rect(GLFWwindow* window, glm::ivec2 pos, glm:
         if (!full_screen)
         {
             #if defined(__APPLE__)
-                debug_handler.post_log(std::string("Window position: x=" + std::to_string(pos.x) + " y=" + std::to_string(pos.y) + " size: x=" + std::to_string(size.x) + " y=" + std::to_string(size.y)), DEBUG_MODE_ERROR);
                 // Fix apple about page padding 
                 // [IMPORTANT]
                 if (pos.y < 25)
@@ -629,6 +625,7 @@ void CGUIMainWindow::resize_window_rect(GLFWwindow* window, glm::ivec2 pos, glm:
  */
 void CGUIMainWindow::key_callback(GLFWwindow* window, int key, int scan_code, int action, int mods)
 {
+    scan_code = scan_code * 2; // Remove later, added in order to fix [-Wunused-parameter]
     CGUIMainWindow* main_window_handler = reinterpret_cast<CGUIMainWindow*>(glfwGetWindowUserPointer(window));
     switch (action)
     {
@@ -653,26 +650,26 @@ void CGUIMainWindow::key_callback(GLFWwindow* window, int key, int scan_code, in
                         glfwGetWindowSize(main_window_handler->main_window, &window_size.x, &window_size.y);
                         glfwGetCursorPos(main_window_handler->main_window, &local_mouse_position.x, &local_mouse_position.y);
                         global_mouse_position = main_window_handler->get_global_mouse_position(main_window_handler->main_window);
-                        main_window_handler->debug_handler.post_log("", DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log(__CGUI_OBF__(""), DEBUG_MODE_NONE);
                         main_window_handler->debug_handler.post_log("/ DEBUG INFO START", DEBUG_MODE_MESSAGE);
-                        main_window_handler->debug_handler.post_log(std::string("| Time passed since program started: " + std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - main_window_handler->program_start_time).count()) + "ms"), DEBUG_MODE_NONE);
-                        main_window_handler->debug_handler.post_log(std::string("| Time required to process last events: " + std::to_string(main_window_handler->last_frame_event_time) + "ms"), DEBUG_MODE_NONE);
-                        main_window_handler->debug_handler.post_log(std::string("| Time required to render last frame: " + std::to_string(main_window_handler->last_frame_render_time) + "ms"), DEBUG_MODE_NONE);
-                        main_window_handler->debug_handler.post_log(std::string("| Rough estimation of fps: " + std::to_string(1000.0f / main_window_handler->last_frame_render_time) + "fps"), DEBUG_MODE_NONE);
-                        main_window_handler->debug_handler.post_log(std::string("| Real amount of fps: " + std::to_string(main_window_handler->last_frames_rendered_per_second) + "fps"), DEBUG_MODE_NONE);
-                        main_window_handler->debug_handler.post_log(std::string("| GLFW version string: " + std::string(glfwGetVersionString())), DEBUG_MODE_NONE);
-                        main_window_handler->debug_handler.post_log(std::string("| Current monitor: " + std::string(glfwGetMonitorName(main_window_handler->get_current_monitor(main_window_handler->main_window)))), DEBUG_MODE_NONE);
-                        main_window_handler->debug_handler.post_log(std::string("| Current window position: x=" + std::to_string(window_position.x) + " y=" + std::to_string(window_position.y)), DEBUG_MODE_NONE);
-                        main_window_handler->debug_handler.post_log(std::string("| Current window size: x=" + std::to_string(window_size.x) + " y=" + std::to_string(window_size.y)), DEBUG_MODE_NONE);
-                        main_window_handler->debug_handler.post_log(std::string("| Current cursor local position: x=" + std::to_string(local_mouse_position.x) + " y=" + std::to_string(local_mouse_position.y)), DEBUG_MODE_NONE);
-                        main_window_handler->debug_handler.post_log(std::string("| Current cursor global position: x=" + std::to_string(global_mouse_position.x) + " y=" + std::to_string(global_mouse_position.y)), DEBUG_MODE_NONE);
-                        main_window_handler->debug_handler.post_log(std::string("| Current window mode: " + std::string((main_window_handler->full_screen == true) ? "Fullscreen" : "Windowed")), DEBUG_MODE_NONE);
-                        main_window_handler->debug_handler.post_log(std::string("| Current window decoration: " + std::string((glfwGetWindowAttrib(main_window_handler->main_window, GLFW_DECORATED) == true) ? "Decorated" : "Not Decorated")), DEBUG_MODE_NONE);
-                        main_window_handler->debug_handler.post_log(std::string("| Current window floating: " + std::string((glfwGetWindowAttrib(main_window_handler->main_window, GLFW_FLOATING) == true) ? "Floating" : "Not Floating")), DEBUG_MODE_NONE);
-                        main_window_handler->debug_handler.post_log(std::string("| Current window visible: " + std::string((glfwGetWindowAttrib(main_window_handler->main_window, GLFW_VISIBLE) == true) ? "Visible" : "Not Visible")), DEBUG_MODE_NONE);
-                        main_window_handler->debug_handler.post_log(std::string("| Current window resizable: " + std::string((glfwGetWindowAttrib(main_window_handler->main_window, GLFW_RESIZABLE) == true) ? "Resizable" : "Not Resizable")), DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log(std::string(__CGUI_OBF__("| Time passed since program started: ") + std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - main_window_handler->program_start_time).count()) + __CGUI_OBF__("ms")), DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log(std::string(__CGUI_OBF__("| Time required to process last events: ") + std::to_string(main_window_handler->last_frame_event_time) + __CGUI_OBF__("ms")), DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log(std::string(__CGUI_OBF__("| Time required to render last frame: ") + std::to_string(main_window_handler->last_frame_render_time) + __CGUI_OBF__("ms")), DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log(std::string(__CGUI_OBF__("| Rough estimation of fps: ") + std::to_string(1000.0f / main_window_handler->last_frame_render_time) + __CGUI_OBF__("fps")), DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log(std::string(__CGUI_OBF__("| Real amount of fps: ") + std::to_string(main_window_handler->last_frames_rendered_per_second) + __CGUI_OBF__("fps")), DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log(std::string(__CGUI_OBF__("| GLFW version string: ") + std::string(glfwGetVersionString())), DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log(std::string(__CGUI_OBF__("| Current monitor: ") + std::string(glfwGetMonitorName(main_window_handler->get_current_monitor(main_window_handler->main_window)))), DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log(std::string(__CGUI_OBF__("| Current window position: x=") + std::to_string(window_position.x) + __CGUI_OBF__(" y=") + std::to_string(window_position.y)), DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log(std::string(__CGUI_OBF__("| Current window size: x=") + std::to_string(window_size.x) + __CGUI_OBF__(" y=") + std::to_string(window_size.y)), DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log(std::string(__CGUI_OBF__("| Current cursor local position: x=") + std::to_string(local_mouse_position.x) + __CGUI_OBF__(" y=") + std::to_string(local_mouse_position.y)), DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log(std::string(__CGUI_OBF__("| Current cursor global position: x=") + std::to_string(global_mouse_position.x) + __CGUI_OBF__(" y=") + std::to_string(global_mouse_position.y)), DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log(std::string(__CGUI_OBF__("| Current window mode: ") + std::string((main_window_handler->full_screen == true) ? __CGUI_OBF__("Fullscreen") : __CGUI_OBF__("Windowed"))), DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log(std::string(__CGUI_OBF__("| Current window decoration: ") + std::string((glfwGetWindowAttrib(main_window_handler->main_window, GLFW_DECORATED) == true) ? __CGUI_OBF__("Decorated") : __CGUI_OBF__("Not Decorated"))), DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log(std::string(__CGUI_OBF__("| Current window floating: ") + std::string((glfwGetWindowAttrib(main_window_handler->main_window, GLFW_FLOATING) == true) ? __CGUI_OBF__("Floating") : __CGUI_OBF__("Not Floating"))), DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log(std::string(__CGUI_OBF__("| Current window visible: ") + std::string((glfwGetWindowAttrib(main_window_handler->main_window, GLFW_VISIBLE) == true) ? __CGUI_OBF__("Visible") : __CGUI_OBF__("Not Visible"))), DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log(std::string(__CGUI_OBF__("| Current window resizable: ") + std::string((glfwGetWindowAttrib(main_window_handler->main_window, GLFW_RESIZABLE) == true) ? __CGUI_OBF__("Resizable") : __CGUI_OBF__("Not Resizable"))), DEBUG_MODE_NONE);
                         main_window_handler->debug_handler.post_log("\\ DEBUG INFO END", DEBUG_MODE_MESSAGE);
-                        main_window_handler->debug_handler.post_log("", DEBUG_MODE_NONE);
+                        main_window_handler->debug_handler.post_log(__CGUI_OBF__(""), DEBUG_MODE_NONE);
                     }
                 }
                 break;
@@ -714,7 +711,7 @@ void CGUIMainWindow::key_callback(GLFWwindow* window, int key, int scan_code, in
 
         default:
         {
-            main_window_handler->debug_handler.post_log("Invalid key callback action: " + std::to_string(action), DEBUG_MODE_ERROR);
+            main_window_handler->debug_handler.post_log(__CGUI_OBF__("Invalid key callback action: ") + std::to_string(action), DEBUG_MODE_ERROR);
             return;
         }
     }
@@ -735,7 +732,7 @@ void CGUIMainWindow::character_callback(GLFWwindow* window, unsigned int charact
         wchar_t* input = new wchar_t[1];
         input[0] = character;
         std::wstring charater(input);
-        main_window_handler->debug_handler.post_log(std::wstring(L"Character: ") + charater, DEBUG_MODE_LOG);
+        main_window_handler->debug_handler.post_log(std::wstring(__CGUI_WOBF__(L"Character: ")) + charater, DEBUG_MODE_LOG);
         delete [] input;
     }
     return;
@@ -973,6 +970,8 @@ void CGUIMainWindow::cursor_position_callback(GLFWwindow* window, double xpos, d
  */
 void CGUIMainWindow::cursor_enter_callback(GLFWwindow* window, int entered)
 {
+    CGUIMainWindow* main_window_handler = reinterpret_cast<CGUIMainWindow*>(glfwGetWindowUserPointer(window));
+    main_window_handler->debug_handler.post_log(std::string(__CGUI_OBF__("Cursor enteren main window: ") + std::to_string(entered)), DEBUG_MODE_LOG);
     return;
 }
 
@@ -986,6 +985,7 @@ void CGUIMainWindow::cursor_enter_callback(GLFWwindow* window, int entered)
  */
 void CGUIMainWindow::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
+    mods = mods * 2; // Remove later, added in order to fix [-Wunused-parameter]
     CGUIMainWindow* main_window_handler = reinterpret_cast<CGUIMainWindow*>(glfwGetWindowUserPointer(window));
     switch (action)
     {
@@ -1002,7 +1002,7 @@ void CGUIMainWindow::mouse_button_callback(GLFWwindow* window, int button, int a
                     glfwGetCursorPos(window, &new_mouse_press_position.x, &new_mouse_press_position.y);
                     main_window_handler->last_mouse_press_position = new_mouse_press_position;
 
-                    main_window_handler->debug_handler.post_log("Left button has been pressed.", DEBUG_MODE_LOG);
+                    main_window_handler->debug_handler.post_log(__CGUI_OBF__("Left button has been pressed."), DEBUG_MODE_LOG);
                 }
                 break;
 
@@ -1021,7 +1021,7 @@ void CGUIMainWindow::mouse_button_callback(GLFWwindow* window, int button, int a
                 case GLFW_MOUSE_BUTTON_LEFT:
                 {
                     main_window_handler->mouse_lb_pressed = false;
-                    main_window_handler->debug_handler.post_log(std::string("Left button has been released, it was held for: " + std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - main_window_handler->last_lb_press_time).count()) + "ms"), DEBUG_MODE_LOG);
+                    main_window_handler->debug_handler.post_log(std::string("The left button was released, it was held: " + std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - main_window_handler->last_lb_press_time).count()) + __CGUI_OBF__("ms")), DEBUG_MODE_LOG);
                 }
                 break;
 
@@ -1035,7 +1035,7 @@ void CGUIMainWindow::mouse_button_callback(GLFWwindow* window, int button, int a
 
         default:
         {
-            main_window_handler->debug_handler.post_log("Invalid key callback action: " + std::to_string(action), DEBUG_MODE_ERROR);
+            main_window_handler->debug_handler.post_log(__CGUI_OBF__("Invalid key callback action: ") + std::to_string(action), DEBUG_MODE_ERROR);
             return;
         }
     }
@@ -1051,6 +1051,8 @@ void CGUIMainWindow::mouse_button_callback(GLFWwindow* window, int button, int a
  */
 void CGUIMainWindow::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
+    CGUIMainWindow* main_window_handler = reinterpret_cast<CGUIMainWindow*>(glfwGetWindowUserPointer(window));
+    main_window_handler->debug_handler.post_log(std::string(__CGUI_OBF__("Scroll event main window: ") + std::to_string(xoffset) + std::string(__CGUI_OBF__(" ")) + std::to_string(yoffset)), DEBUG_MODE_LOG);
     return;
 }
 
@@ -1063,7 +1065,10 @@ void CGUIMainWindow::scroll_callback(GLFWwindow* window, double xoffset, double 
  */
 void CGUIMainWindow::framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
+    CGUIMainWindow* main_window_handler = reinterpret_cast<CGUIMainWindow*>(glfwGetWindowUserPointer(window));
+    main_window_handler->debug_handler.post_log(std::string(__CGUI_OBF__("Framebuffer size changed main window: ") + std::to_string(width) + std::string(__CGUI_OBF__(" ")) + std::to_string(height)), DEBUG_MODE_LOG);
     glViewport(0, 0, width, height);
+    return;
 }  
 
 void CGUIMainWindow::window_size_callback(GLFWwindow* window, int width, int height)

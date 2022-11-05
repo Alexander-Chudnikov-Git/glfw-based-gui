@@ -25,6 +25,8 @@
 #ifndef CGUIEBOHANDLER_HPP
 #define CGUIEBOHANDLER_HPP
 
+#include <vector> 
+
 /**
  * Include GLFW and GLAD for window handling.
  */
@@ -33,7 +35,20 @@
 
 class CGUIEBO 
 {
-    
+public:
+    CGUIEBO(std::vector<GLuint>& indices, bool is_buffer_static = false);
+    ~CGUIEBO();
+
+    void bind();
+    void unbind();
+    void destroy();
+
+    bool is_static();
+
+private:
+    bool    buffer_static;
+    GLuint  buffer_id;
+
 };
 
 #endif // CGUIEBOHANDLER_HPP

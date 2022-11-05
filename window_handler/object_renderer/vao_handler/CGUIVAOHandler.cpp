@@ -22,5 +22,37 @@
  * 
  * @todo       Implement the whole class.
  */
-#include "CGUIVBOHandler.hpp"
+#include "CGUIVAOHandler.hpp"
 
+CGUIVAO::CGUIVAO(bool is_buffer_static)
+{
+    buffer_static = is_buffer_static;
+
+    glGenVertexArrays(1, &buffer_id);
+}
+
+// Binds the VAO
+void CGUIVAO::bind()
+{
+    glBindVertexArray(buffer_id);
+}
+
+// Unbinds the VAO
+void CGUIVAO::unbind()
+{
+    glBindVertexArray(0);
+}
+
+// Deletes the VAO
+void CGUIVAO::destroy()
+{
+    glDeleteVertexArrays(1, &buffer_id);
+}
+
+void CGUIVAO::link_attributes(CGUIVBO& VBO, GLuint layout, GLuint components_number, GLenum type, GLsizeiptr byte_offset, void* offset)
+{
+    VBO.bind();
+    glVertexAttribPointer(layout, components_number, type, GL_FALSE, byte_offset, offset);
+    glEnableVertexAttribArray(layout);
+    VBO.unbind();
+}

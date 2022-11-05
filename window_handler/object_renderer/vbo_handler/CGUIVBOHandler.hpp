@@ -32,27 +32,45 @@
 #include "../../glfw/include/GLFW/glfw3.h"
 #include "../../glm/glm/glm.hpp"
 
+#include <vector>
+
 
 /**
  * Standart vretex, that is being used universaly.
  */
 struct CGUIVertex
 {
-    glm::vec3 position;
-    glm::vec3 normal;
-    glm::vec4 color;
-    glm::vec2 tx_position;
+    glm::fvec3 position;
+    glm::fvec3 normal;
+    glm::fvec4 color;
+    glm::fvec2 uv_position;
+    glm::fvec1 texture_id;
+};
+
+struct CGUIObject
+{
+    std::vector<CGUIVertex> vertices;
+    std::vector<GLuint>     indices;
+    bool                    is_static;
 };
 
 
 class CGUIVBO 
 {
 public:
-    CGUIVBO(bool buffer_static = false); 
+    CGUIVBO(std::vector<CGUIVertex>& vertices, bool is_buffer_static = false); 
     CGUIVBO(const CGUIVBO&) = delete;
     ~CGUIVBO();
 
+    void bind();
+    void unbind();
+    void destroy();
+    
+    bool is_static();
 
+private: 
+    bool    buffer_static;
+    GLuint  buffer_id;
 };
 
 #endif // CGUIVBOHANDLER_HPP
