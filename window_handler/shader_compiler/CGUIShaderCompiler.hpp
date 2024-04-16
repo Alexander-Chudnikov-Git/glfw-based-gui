@@ -1,25 +1,25 @@
 /**
  * @file       <CGUIShaderCompiler.hpp>
- * @brief      This header file implements CGUIShaderCompiler class. 
- *             
- *             It is being used in order to compile and use shaders, 
+ * @brief      This header file implements CGUIShaderCompiler class.
+ *
+ *             It is being used in order to compile and use shaders,
  *             that would be later used by renderer.
  *
  * @author     THE_CHOODICK
  * @date       30-07-2022
  * @version    0.0.1
- * 
- * @warning    This library is under development, so it might work unstable.  
- * @bug        Currently, there are no any known bugs. 
- * 
+ *
+ * @warning    This library is under development, so it might work unstable.
+ * @bug        Currently, there are no any known bugs.
+ *
  *             In order to submit new ones, please contact me via bug-report@choodick.com.
- * 
- * @copyright  Copyright 2022 Alexander. All rights reserved. 
- * 
+ *
+ * @copyright  Copyright 2022 Alexander. All rights reserved.
+ *
  *             (Not really)
- * 
+ *
  * @license    This project is released under the GNUv3 Public License.
- * 
+ *
  * @todo       Implement the whole class.
  */
 #ifndef CGUISHADERCOMPILER_HPP
@@ -32,21 +32,21 @@
 /**<
  * Include GLFW and GLAD for window handling.
  */
-#include "../glad/glad.h"
-#include "../glfw/include/GLFW/glfw3.h"
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 
 //#if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
 //    #include "../glfw/include/GLFW/glfw3native.h"
 //    #include <windows.h>
 //#endif
 
-#include "../object_renderer/glm/glm/glm.hpp"
-#include "../object_renderer/glm/glm/gtc/matrix_transform.hpp"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "../debug_handler/CGUIDebugHandler.hpp"
 
 #if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
-    #include "../../resources/resources.hpp" 
+    #include "../../resources/resources.hpp"
 
     #include <windows.h>
 #endif // Windows

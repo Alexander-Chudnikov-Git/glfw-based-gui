@@ -3,13 +3,12 @@
 
 int main(int argc, char const *argv[])
 {
-	
 	switch(argc)
 	{
 		case 1:
 		{
 			CGUIMainWindow window;
-		
+
 			window.show();
 			window.close();
 		}

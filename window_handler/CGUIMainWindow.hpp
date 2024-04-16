@@ -1,25 +1,25 @@
 /**
  * @file       <CGUIMainWindow.hpp>
- * @brief      This header file implements CGUIMainWindow class. 
- *             
- *             It is being used in order to create main window, that would 
+ * @brief      This header file implements CGUIMainWindow class.
+ *
+ *             It is being used in order to create main window, that would
  *             be populated with UI elements specific for this project.
  *
  * @author     THE_CHOODICK
  * @date       30-07-2022
  * @version    0.0.1
- * 
- * @warning    This library is under development, so it might work unstable.  
- * @bug        Currently, there are no any known bugs. 
- * 
+ *
+ * @warning    This library is under development, so it might work unstable.
+ * @bug        Currently, there are no any known bugs.
+ *
  *             In order to submit new ones, please contact me via bug-report@choodick.com.
- * 
- * @copyright  Copyright 2022 Alexander. All rights reserved. 
- * 
+ *
+ * @copyright  Copyright 2022 Alexander. All rights reserved.
+ *
  *             (Not really)
- * 
+ *
  * @license    This project is released under the GNUv3 Public License.
- * 
+ *
  * @todo       Implement the whole class.
  */
 #ifndef CGUIMAINWINOW_HPP
@@ -28,8 +28,8 @@
 /**
  * Include some important headers.
  */
-#include "glm/glm/glm.hpp"
-#include "glm/glm/gtc/matrix_transform.hpp" 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "debug_handler/CGUIDebugHandler.hpp"
 #include "shader_compiler/CGUIShaderCompiler.hpp"
@@ -64,7 +64,7 @@
 #define CGUI_PRESS_TYPE_WINDOW_NONE                 255
 
 /**
- * @brief      This class represents creation and handling of main window. 
+ * @brief      This class represents creation and handling of main window.
  *             Class is based on GLFW and glad libraries, and uses them in oreder to create/handle/render window.
  */
 class CGUIMainWindow
@@ -81,7 +81,7 @@ public:
 private:
     bool initialize(std::string main_window_name_arg = __CGUI_OBF__("CGUI Default Window"), bool vertical_sync_arg = false, bool full_screen_arg = false);
     bool initialize_renderer();
-    
+
     void update_thread();
     void render_frames();
     void update_events();
