@@ -1,31 +1,30 @@
 /**
  * @file       <CGUIMainWindow.cpp>
- * @brief      This source file implements CGUIMainWindow class. 
- *             
- *             It is being used in order to create main window, that would 
+ * @brief      This source file implements CGUIMainWindow class.
+ *
+ *             It is being used in order to create main window, that would
  *             be populated with UI elements specific for this project.
  *
  * @author     THE_CHOODICK
  * @date       30-07-2022
  * @version    0.0.1
- * 
- * @warning    This library is under development, so it might work unstable.  
- * @bug        Currently, there are no any known bugs. 
- * 
+ *
+ * @warning    This library is under development, so it might work unstable.
+ * @bug        Currently, there are no any known bugs.
+ *
  *             In order to submit new ones, please contact me via bug-report@choodick.com.
- * 
- * @copyright  Copyright 2022 Alexander. All rights reserved. 
- * 
+ *
+ * @copyright  Copyright 2022 Alexander. All rights reserved.
+ *
  *             (Not really)
- * 
+ *
  * @license    This project is released under the GNUv3 Public License.
- * 
+ *
  * @todo       Implement the whole class.
  */
 #include "CGUIMainWindow.hpp"
-#include "glad/glad.h"
-#include "glfw/include/GLFW/glfw3.h"
-#include "glm/glm/fwd.hpp"
+#include <glad/glad.h>
+#include <glm/fwd.hpp>
 
 
 /********************************************************************************
@@ -116,7 +115,7 @@ bool CGUIMainWindow::initialize(std::string main_window_name_arg, bool vertical_
 
     debug_handler.post_log(__CGUI_OBF__("CGUI Initialization has started."), DEBUG_MODE_LOG);
 
-    // Add ini settings loader 
+    // Add ini settings loader
     debug_handler.post_log(__CGUI_OBF__("Ini file has been loaded."), DEBUG_MODE_LOG);
 
     glfwSetErrorCallback(CGUIDebugHandler::glfw_error_callback);
@@ -167,7 +166,7 @@ bool CGUIMainWindow::initialize(std::string main_window_name_arg, bool vertical_
         debug_handler.post_log(__CGUI_OBF__("Full screen window is being created."), DEBUG_MODE_LOG);
         set_fullscreen_mode();
     }
-    else 
+    else
     {
         debug_handler.post_log(__CGUI_OBF__("Normal window is being created."), DEBUG_MODE_LOG);
         set_windowed_mode();
@@ -195,7 +194,7 @@ bool CGUIMainWindow::initialize(std::string main_window_name_arg, bool vertical_
     glfwSetCursorEnterCallback(main_window, cursor_enter_callback);
     glfwSetMouseButtonCallback(main_window, mouse_button_callback);
     glfwSetScrollCallback(main_window, scroll_callback);
-    glfwSetFramebufferSizeCallback(main_window, framebuffer_size_callback);  
+    glfwSetFramebufferSizeCallback(main_window, framebuffer_size_callback);
     glfwSetWindowSizeCallback(main_window, window_size_callback);
 
     debug_handler.post_log(__CGUI_OBF__("Callback have been initialized."), DEBUG_MODE_LOG);
@@ -208,7 +207,7 @@ bool CGUIMainWindow::initialize(std::string main_window_name_arg, bool vertical_
     }
 
     if (vertical_sync)
-    { 
+    {
         glfwSwapInterval(1);
     }
 
@@ -228,7 +227,7 @@ bool CGUIMainWindow::initialize_renderer()
     #ifdef __APPLE__
         shaders = new CGUIShaderCompiler(CGUI_SHADER_TRIANDLE, triangle_vertext_file_path, triangle_fragment_file_path, triangle_geometry_file_path);
     #endif //__APPLE__
-    
+
 
     // ... VBO implementation
 
@@ -240,17 +239,17 @@ bool CGUIMainWindow::initialize_renderer()
  */
 void CGUIMainWindow::update_thread()
 {
-    // Set GLFW context to NULL in order to render window in separate thread 
+    // Set GLFW context to NULL in order to render window in separate thread
     glfwMakeContextCurrent(NULL);
 
     render_thread = new std::thread(&CGUIMainWindow::frame_renderer_wrapper, this);
     render_thread->detach();
-    
+
     update_events();
 
     if (render_thread->joinable())
     {
-        render_thread->join(); 
+        render_thread->join();
     }
 
     return;
@@ -269,10 +268,10 @@ void CGUIMainWindow::render_frames()
     while(!glfwWindowShouldClose(main_window))
     {
         last_frame_render_time_start = std::chrono::steady_clock::now();
-        
+
         float framebuffer_ratio;
         glm::ivec2 framebuffer_size;
-        
+
         {
             std::unique_lock thread_lock(thread_mutex);
             if (!is_resized)
@@ -291,9 +290,9 @@ void CGUIMainWindow::render_frames()
             {
                 glFinish();
             }
-            
+
             glfwSwapBuffers(main_window);
-            
+
             if (vertical_sync)
             {
                 glFinish();
@@ -341,7 +340,7 @@ void CGUIMainWindow::update_events()
 void CGUIMainWindow::frame_renderer_wrapper()
 {
     //std::lock_guard<std::mutex> lock(thread_mutex);
-    
+
     glfwMakeContextCurrent(this->main_window);
 
     std::stringstream thread_id;
@@ -374,7 +373,7 @@ void CGUIMainWindow::set_fullscreen_mode()
  * @brief      Switches window mode to windowed
  */
 void CGUIMainWindow::set_windowed_mode()
-{   
+{
     glfwHideWindow(main_window);
     debug_handler.post_log(__CGUI_OBF__("Window mode has been set to windowed."), DEBUG_MODE_LOG);
     full_screen = false;
@@ -396,7 +395,7 @@ void CGUIMainWindow::switch_window_mode()
     {
         set_fullscreen_mode();
     }
-    else 
+    else
     {
         set_windowed_mode();
     }
@@ -404,9 +403,9 @@ void CGUIMainWindow::switch_window_mode()
 
 /**
  * @brief      Gets the selected monitor.
- * 
+ *
  * @param      cursor_position   Position of a cursor.
- * 
+ *
  * @return     Focused  window pointer.
  */
 GLFWmonitor* CGUIMainWindow::get_monitor_by_cpos(glm::dvec2 cursor_position)
@@ -417,16 +416,16 @@ GLFWmonitor* CGUIMainWindow::get_monitor_by_cpos(glm::dvec2 cursor_position)
 
     GLFWmonitor** monitors = glfwGetMonitors(&monitor_count);
     for (int current_monitor_id = 0; current_monitor_id < monitor_count; ++current_monitor_id)
-    {   
+    {
         const GLFWvidmode* monitor_video_mode = glfwGetVideoMode(monitors[current_monitor_id]);
 
         monitor_size = {monitor_video_mode->width, monitor_video_mode->height};
 
         glfwGetMonitorPos(monitors[current_monitor_id], &monitor_position.x, &monitor_position.y);
-        
+
         if (collision(glm::ivec2(monitor_position.x, monitor_position.y), glm::ivec2(monitor_position.x + monitor_video_mode->width, monitor_position.y + monitor_video_mode->height), glm::ivec2(cursor_position.x, cursor_position.y)))
         {
-            return monitors[current_monitor_id];  
+            return monitors[current_monitor_id];
         }
         //debug_handler.post_log(std::string(__CGUI_OBF__("Monitor: ")) + glfwGetMonitorName(monitors[current_monitor_id]) + std::string(__CGUI_OBF__(" position: x-")) + std::to_string(cursor_position.x) + std::string(__CGUI_OBF__(" y-")) + std::to_string(cursor_position.y), DEBUG_MODE_LOG);
     }
@@ -437,12 +436,12 @@ GLFWmonitor* CGUIMainWindow::get_monitor_by_cpos(glm::dvec2 cursor_position)
  * @brief      Gets the current monitor.
  *
  * @param      window   Window pointer.
- * 
+ *
  * @return     Current window pointer.
  */
 GLFWmonitor* CGUIMainWindow::get_current_monitor(GLFWwindow *window)
 {
-    int monitor_count, overlap_factor; 
+    int monitor_count, overlap_factor;
     int best_overlap_factor = 0;
     glm::ivec2 monitor_position, window_position;
     glm::ivec2 monitor_size, window_size;
@@ -453,7 +452,7 @@ GLFWmonitor* CGUIMainWindow::get_current_monitor(GLFWwindow *window)
     GLFWmonitor* best_current_monitor = NULL;
     GLFWmonitor** monitors = glfwGetMonitors(&monitor_count);
     for (int current_monitor_id = 0; current_monitor_id < monitor_count; ++current_monitor_id)
-    {   
+    {
         const GLFWvidmode* monitor_video_mode = glfwGetVideoMode(monitors[current_monitor_id]);
 
         monitor_size = {monitor_video_mode->width, monitor_video_mode->height};
@@ -462,12 +461,12 @@ GLFWmonitor* CGUIMainWindow::get_current_monitor(GLFWwindow *window)
 
         overlap_factor = std::max(0, std::min(window_position.x + window_size.x, monitor_position.x + monitor_size.x) - std::max(window_position.x, monitor_position.x)) * std::max(0, std::min(window_position.y + window_size.y, monitor_position.y + monitor_size.y) - std::max(window_position.y, monitor_position.y));
 
-        if (best_overlap_factor < overlap_factor) 
+        if (best_overlap_factor < overlap_factor)
         {
             best_overlap_factor = overlap_factor;
             best_current_monitor = monitors[current_monitor_id];
         }
-        
+
         //debug_handler.post_log(std::string(__CGUI_OBF__("Monitor: ")) + glfwGetMonitorName(monitors[current_monitor_id]) + std::string(__CGUI_OBF__(" position: x-")) + std::to_string(cursor_position.x) + std::string(__CGUI_OBF__(" y-")) + std::to_string(cursor_position.y), DEBUG_MODE_LOG);
     }
     return best_current_monitor;
@@ -487,7 +486,7 @@ glm::dvec2 CGUIMainWindow::get_global_mouse_position(GLFWwindow* window)
     glfwGetCursorPos(window, &cursor_position.x, &cursor_position.y);
     glfwGetWindowPos(window, &window_position.x, &window_position.y);
 
-    cursor_position += window_position;  
+    cursor_position += window_position;
 
     //debug_handler.post_log(std::string(__CGUI_OBF__("Global mouse position: x-")) + std::to_string(cursor_position.x) + std::string(__CGUI_OBF__(" y-")) + std::to_string(cursor_position.y), DEBUG_MODE_LOG);
 
@@ -530,7 +529,7 @@ uint8_t CGUIMainWindow::assert_window_press_type(glm::dvec2 press_position)
             {
                 press_type = CGUI_PRESS_TYPE_WINDOW_RESIZE_BOTTOM_LEFT;
             }
-            else 
+            else
             {
                 press_type = CGUI_PRESS_TYPE_WINDOW_RESIZE_LEFT;
             }
@@ -545,7 +544,7 @@ uint8_t CGUIMainWindow::assert_window_press_type(glm::dvec2 press_position)
             {
                 press_type = CGUI_PRESS_TYPE_WINDOW_RESIZE_BOTTOM_RIGHT;
             }
-            else 
+            else
             {
                 press_type = CGUI_PRESS_TYPE_WINDOW_RESIZE_RIGHT;
             }
@@ -563,7 +562,7 @@ uint8_t CGUIMainWindow::assert_window_press_type(glm::dvec2 press_position)
             press_type = CGUI_PRESS_TYPE_WINDOW_MOVE;
         }
     }
-    else 
+    else
     {
         press_type = CGUI_PRESS_TYPE_WINDOW_FULLSCREEN;
     }
@@ -586,7 +585,7 @@ void CGUIMainWindow::resize_window_rect(GLFWwindow* window, glm::ivec2 pos, glm:
         if (!full_screen)
         {
             #if defined(__APPLE__)
-                // Fix apple about page padding 
+                // Fix apple about page padding
                 // [IMPORTANT]
                 if (pos.y < 25)
                 {
@@ -757,8 +756,8 @@ void CGUIMainWindow::cursor_position_callback(GLFWwindow* window, double xpos, d
 
     switch (main_window_handler->window_press_type)
     {
-        case CGUI_PRESS_TYPE_WINDOW_MOVE: 
-        {   
+        case CGUI_PRESS_TYPE_WINDOW_MOVE:
+        {
             main_window_handler->current_cursor = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
             if (new_mouse_press_position != main_window_handler->last_mouse_press_position && main_window_handler->mouse_lb_pressed)
             {
@@ -839,7 +838,7 @@ void CGUIMainWindow::cursor_position_callback(GLFWwindow* window, double xpos, d
                 main_window_handler->resize_window_rect(main_window_handler->main_window, {window_position.x, window_geom_temp.y}, {window_geom_temp.x, window_size.y - (window_geom_temp.y - window_position.y)});
             }
         }
-        break; 
+        break;
 
         case CGUI_PRESS_TYPE_WINDOW_RESIZE_BOTTOM_LEFT:
         {
@@ -958,7 +957,7 @@ void CGUIMainWindow::cursor_position_callback(GLFWwindow* window, double xpos, d
     }
 
     glfwSetCursor(window, main_window_handler->current_cursor);
-    
+
     return;
 }
 
@@ -1058,7 +1057,7 @@ void CGUIMainWindow::scroll_callback(GLFWwindow* window, double xoffset, double 
 
 /**
  * @brief      Frame buffer resize handler.
- * 
+ *
  * @param      window   Window pointer.
  * @param[in]  width    Frame buffer width.
  * @param[in]  height   Frame buffer height.
@@ -1069,7 +1068,7 @@ void CGUIMainWindow::framebuffer_size_callback(GLFWwindow* window, int width, in
     main_window_handler->debug_handler.post_log(std::string(__CGUI_OBF__("Framebuffer size changed main window: ") + std::to_string(width) + std::string(__CGUI_OBF__(" ")) + std::to_string(height)), DEBUG_MODE_LOG);
     glViewport(0, 0, width, height);
     return;
-}  
+}
 
 void CGUIMainWindow::window_size_callback(GLFWwindow* window, int width, int height)
 {

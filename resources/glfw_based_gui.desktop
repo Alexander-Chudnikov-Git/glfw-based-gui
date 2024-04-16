@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=GLFW Based GUI
+GenericName=GLFW GUI
+Comment=Test bed for GLFW based graphic user interface
+Exec=/usr/bin/glfw-based-gui
+Icon=/usr/share/icons/hicolor/64x64/apps/glfw_based_gui.png
+Categories=Utility;
+

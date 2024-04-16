@@ -1,18 +1,16 @@
-add_subdirectory(glm)					# Add glm subdirectory in order to load library
-add_subdirectory(vbo_handler)			# Add vbo_handler subdirectory in order to load library
-add_subdirectory(vao_handler)			# Add vao_handler subdirectory in order to load library
-add_subdirectory(ebo_handler)			# Add ebo_handler subdirectory in order to load library
+add_subdirectory(vbo_handler)
+add_subdirectory(vao_handler)
+add_subdirectory(ebo_handler)
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)												# Set c++ standart to 20
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_library(object_renderer STATIC CGUIObjectRenderer.cpp CGUIObjectRenderer.hpp)		# Create library that later would be linked to main project
+add_library(object_renderer STATIC CGUIObjectRenderer.cpp CGUIObjectRenderer.hpp)
 
-target_include_directories(object_renderer PUBLIC glm/ 
-	vbo_handler/ vao_handler/ ebo_handler/)							# Link include directories
+target_include_directories(object_renderer PUBLIC vbo_handler/ vao_handler/
+	ebo_handler/)
 
-target_link_directories(object_renderer PUBLIC glm/ 
-	vbo_handler/ vao_handler/ ebo_handler/)							# Link directories for libraries
+target_link_directories(object_renderer PUBLIC vbo_handler/ vao_handler/
+	ebo_handler/)
 
-target_link_libraries(object_renderer vbo_handler vao_handler 
-	ebo_handler glm)
+target_link_libraries(object_renderer vbo_handler vao_handler ebo_handler glm)

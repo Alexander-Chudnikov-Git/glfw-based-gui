@@ -1,21 +1,23 @@
-add_subdirectory(glad)															# Add glad subdirectory in order to load library
-add_subdirectory(GLFW)															# Add GLFW subdirectory in order to load library
-add_subdirectory(debug_handler)													# Add debug_handler subdirectory in order to load library
-add_subdirectory(object_renderer)												# Add object_renderer subdirectory in order to load library
-add_subdirectory(shader_compiler)												# Add shader_compiler subdirectory in order to load library
+add_subdirectory(debug_handler)
+add_subdirectory(object_renderer)
+add_subdirectory(shader_compiler)
+add_subdirectory(../external/glad/ glad)
 
 find_package(glfw3 3.3 REQUIRED)
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)												# Set c++ standart to 20
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_library(window_handler STATIC CGUIMainWindow.cpp CGUIMainWindow.hpp)		# Create library that later would be linked to main project
+add_library(window_handler STATIC CGUIMainWindow.cpp CGUIMainWindow.hpp)
 
-target_include_directories(window_handler PUBLIC glad/ glfw/ 
-	debug_handler/ object_renderer/ shader_compiler/)							# Link include directories
+target_include_directories(window_handler PUBLIC debug_handler/ object_renderer/
+	shader_compiler/)
+target_include_directories(${PROJECT_NAME} PRIVATE ../external/glad)
 
-target_link_directories(window_handler PUBLIC glad/ glfw/
-	debug_handler/ object_renderer/ shader_compiler/)							# Link directories for libraries
+target_link_directories(window_handler PUBLIC debug_handler/ object_renderer/
+	shader_compiler/)
+target_link_directories(${PROJECT_NAME} PRIVATE ../external/glad)
 
-target_link_libraries(window_handler debug_handler object_renderer 
-	glad glfw shader_compiler)
+target_link_libraries(window_handler debug_handler object_renderer glfw glad
+	shader_compiler)
+

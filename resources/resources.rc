@@ -2,7 +2,7 @@
 
 
 // Application icon
-GBG_ICON_0			ICON		DISCARDABLE		"icon.ico"
+GBG_ICON_0			ICON		DISCARDABLE		"icons/win/icon.ico"
 
 // Vertex shaders
 GBG_VERT_SHADER_0	SHADERS						"cgui_tri_vert.vs"
