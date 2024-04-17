@@ -28,6 +28,8 @@
 /**
  * Include some important headers.
  */
+
+#include <glad/gl.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -150,9 +152,17 @@ private:
     glm::ivec2 window_size_min      = {480, 240};
     glm::ivec2 last_window_position = {0, 0};
 
-    fs::path triangle_vertext_file_path     = __CGUI_OBF__("cgui_tri_vert.vs");
-    fs::path triangle_fragment_file_path    = __CGUI_OBF__("cgui_tri_frag.fs");
-    fs::path triangle_geometry_file_path    = __CGUI_OBF__("");                    // cgui_tri_geom.gs
+    #if defined(__APPLE__) || defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
+        fs::path triangle_vertext_file_path     = __CGUI_OBF__("cgui_tri_vert.vs");
+        fs::path triangle_fragment_file_path    = __CGUI_OBF__("cgui_tri_frag.fs");
+        fs::path triangle_geometry_file_path    = __CGUI_OBF__("");
+    #endif
+
+    #if defined(__unix__) || defined(__linux__)
+        fs::path triangle_vertext_file_path     = __CGUI_OBF__("/usr/share/glfw-based-gui/resources/cgui_tri_vert.vs");
+        fs::path triangle_fragment_file_path    = __CGUI_OBF__("/usr/share/glfw-based-gui/resources/cgui_tri_frag.fs");
+        fs::path triangle_geometry_file_path    = __CGUI_OBF__("");
+    #endif
 
     std::thread* render_thread;
 
