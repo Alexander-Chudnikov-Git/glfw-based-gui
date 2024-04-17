@@ -1,0 +1,1 @@
+--out-path /home/chooisfox/Documents/programming/cpp/blueline-software/glfw-based-gui/external/glad/ --api gl:core=4.6 --reproducible c

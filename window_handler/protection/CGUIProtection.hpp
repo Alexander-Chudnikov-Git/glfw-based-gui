@@ -84,7 +84,6 @@ public:
         static constexpr const std::array<T, N> cgi_r()
         {
             std::array<T, N> key;
-            key.fill(0);
 
             constexpr auto distribution = uniform_distribution<int, N>(0, 255, LINE);
 
@@ -114,8 +113,6 @@ public:
         static constexpr std::array<T, SIZE> uniform_distribution(T min, T max, std::size_t line)
         {
             std::array<T, SIZE> distribution;
-
-            distribution.fill(0);
 
             auto previous = constexpr_seed(line);
             for (auto &element : distribution)
@@ -147,8 +144,6 @@ public:
         static constexpr std::array<T, SIZE> normal_distribution()
         {
             std::array<T, SIZE> distribution;
-
-            distribution.fill(0);
 
             auto previous = constexpr_seed(0);
             for (auto &element : distribution)
@@ -184,8 +179,8 @@ public:
             std::array<T, STRING_LENGTH + 2 + (STRING_LENGTH % 2)> encryptred_data;
             std::array<T, STRING_LENGTH + 2 + (STRING_LENGTH % 2)> encryption_buffer;
 
-            encryptred_data.fill(0);
-            encryption_buffer.fill(0);
+            encryptred_data.fill('\0');
+            encryption_buffer.fill('\0');
 
             for(std::size_t index = 0; index < new_buffer_length; ++index)
             {
@@ -235,7 +230,7 @@ public:
             T* decryptred_buffer = new T[new_buffer_length];
             T* decryptred_mid_buffer = new T[new_buffer_length];
 
-            decryptred_data.fill(0);
+            decryptred_data.fill('\0');
 
             for(std::size_t index = 0; index < new_buffer_length; ++index)
             {

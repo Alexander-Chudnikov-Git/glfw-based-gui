@@ -26,6 +26,7 @@
 #include <filesystem>
 #include <iostream>
 #include <streambuf>
+#include <cstdlib>
 
 CGUIDebugHandler main_debug_handler = CGUIDebugHandler();
 
@@ -37,7 +38,7 @@ CGUIDebugHandler main_debug_handler = CGUIDebugHandler();
  */
 CGUIDebugHandler::CGUIDebugHandler(bool clear_base_dir, std::string full_file_path)
 {
-    if(full_file_path != __CGUI_OBF__(""))
+    if (full_file_path != __CGUI_OBF__(""))
     {
         debug_file_path = fs::path(full_file_path);
     }
@@ -58,17 +59,17 @@ CGUIDebugHandler::CGUIDebugHandler(bool clear_base_dir, std::string full_file_pa
 
     fs::create_directories(debug_file_path.parent_path());
 
-    if(clear_base_dir)
+    if (clear_base_dir)
     {
         clear_log(debug_file_path);
     }
 
     struct stat debug_buffer;
-    if(stat(debug_file_path.string().c_str(), &debug_buffer) != 0)
+    if (stat(debug_file_path.string().c_str(), &debug_buffer) != 0)
     {
 
         debug_file_out.open(debug_file_path.string().c_str(), std::ios::out | std::ios::app);
-        if(!debug_file_out.good())
+        if (!debug_file_out.good())
         {
             std::cerr << __CGUI_OBF__("Unable to initialize debug handler with this name : ") << debug_file_path;
         }
@@ -91,11 +92,11 @@ CGUIDebugHandler::CGUIDebugHandler(const CGUIDebugHandler& debug_handler)
     debug_file_path = debug_handler.debug_file_path;
     debug_disabled = debug_handler.debug_disabled;
     struct stat debug_buffer;
-    if(stat(debug_file_path.string().c_str(), &debug_buffer) != 0)
+    if (stat(debug_file_path.string().c_str(), &debug_buffer) != 0)
     {
 
         debug_file_out.open(debug_file_path.string().c_str(), std::ios::out | std::ios::app);
-        if(!debug_file_out.good())
+        if (!debug_file_out.good())
         {
             std::cerr << __CGUI_OBF__("Unable to initialize debug handler with this name : ") << debug_file_path;
         }
@@ -113,7 +114,7 @@ CGUIDebugHandler::CGUIDebugHandler(const CGUIDebugHandler& debug_handler)
  */
 CGUIDebugHandler::~CGUIDebugHandler()
 {
-    if(debug_file_out.is_open())
+    if (debug_file_out.is_open())
     {
         debug_file_out.close();
     }
@@ -138,7 +139,7 @@ void CGUIDebugHandler::post_log(std::string message, size_t mode)
  */
 void CGUIDebugHandler::post_log(std::wstring message, size_t mode)
 {
-    if(debug_disabled)
+    if (debug_disabled)
     {
         return;
     }
@@ -149,7 +150,7 @@ void CGUIDebugHandler::post_log(std::wstring message, size_t mode)
         case DEBUG_MODE_ERROR:
         {
             error_tag = __CGUI_WOBF__(L"[ERROR]");
-            std::wcerr << message;
+            std::wcerr << message << std::endl;
         }
         break;
 
@@ -283,8 +284,7 @@ void CGUIDebugHandler::glfw_error_callback(int error, const char* description)
     }
     std::stringstream formated_error;
     formated_error << std::setw(14) << std::left << error_prefix << __CGUI_OBF__(" ") << description << "\n";
-    CGUIDebugHandler temp(false);
-    temp.post_log(formated_error.str(), 4);
+    main_debug_handler.post_log(formated_error.str(), 4);
 }
 
 CGUIDebugHandler& CGUIDebugHandler::operator=(CGUIDebugHandler&& debug_handler)
@@ -304,9 +304,9 @@ CGUIDebugHandler& CGUIDebugHandler::operator=(CGUIDebugHandler&& debug_handler)
  */
 void CGUIDebugHandler::clear_log(fs::path log_file_directory)
 {
-    for(const auto &file : fs::directory_iterator(log_file_directory.parent_path()))
+    for (const auto &file : fs::directory_iterator(log_file_directory.parent_path()))
     {
-        if(file.path().string().find(__CGUI_OBF__("debug_log_")) != std::string::npos)
+        if (file.path().string().find(__CGUI_OBF__("debug_log_")) != std::string::npos)
         {
             fs::remove(file.path());
         }
@@ -338,8 +338,9 @@ std::string CGUIDebugHandler::fill_zeros(int input_num, int num_offset)
 std::wstring CGUIDebugHandler::str_to_wstr(std::string message)
 {
     //std::wstring message_wstr(message.begin(), message.end());
-    std::wstring message_wstr(message.length(), L'\0');
-    std::mbstowcs(&message_wstr[0], message.c_str(), message.length());
+    std::wstring message_wstr;
+	message_wstr.resize(message.length());
+	std::mbstowcs(&message_wstr[0], message.c_str(), message.size());
 
-    return message_wstr;
+	return message_wstr;
 }

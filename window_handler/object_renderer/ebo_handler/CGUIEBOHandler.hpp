@@ -30,7 +30,7 @@
 /**
  * Include GLFW and GLAD for window handling.
  */
-#include <glad/glad.h>
+#include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
 class CGUIEBO
