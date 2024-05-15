@@ -26,6 +26,15 @@
 #include <glm/fwd.hpp>
 
 
+// Test variable
+struct Color {
+    GLfloat red = 1.0f;
+    GLfloat green = 0.0f;
+    GLfloat blue = 0.0f;
+    GLfloat alpha = 1.0f;
+} smooth_background;
+
+Color smooth_background_delta;
 /********************************************************************************
  *  							     Public block 								*
  ********************************************************************************/
@@ -307,7 +316,59 @@ void CGUIMainWindow::render_frames()
             framebuffer_ratio = framebuffer_size.x / (float) framebuffer_size.y;
 
             glViewport(0, 0, framebuffer_size.x, framebuffer_size.y);
-            glClearColor((rand() % 100) / 100.0f, (rand() % 100) / 100.0f, (rand() % 100) / 100.0f, 1.0f);
+
+            // DEBUG COLOR
+
+            smooth_background.red += smooth_background_delta.red;
+            smooth_background.green += smooth_background_delta.green;
+            smooth_background.blue += smooth_background_delta.blue;
+
+            if(smooth_background.red >= 1.0f && smooth_background.green <= 0 && smooth_background.blue <= 0)
+            {
+                smooth_background_delta.red = 0;
+                smooth_background_delta.green = 0.1;
+                smooth_background_delta.blue = 0;
+            }
+
+            if(smooth_background.red >= 1.0f && smooth_background.green >= 1.0f && smooth_background.blue <= 0)
+            {
+                smooth_background_delta.red = -0.1;
+                smooth_background_delta.green = 0;
+                smooth_background_delta.blue = 0;
+            }
+
+            if(smooth_background.red <= 0 && smooth_background.green >= 1.0f && smooth_background.blue <= 0)
+            {
+                smooth_background_delta.red = 0;
+                smooth_background_delta.green = 0;
+                smooth_background_delta.blue = 0.1;
+            }
+
+            if(smooth_background.red <= 0 && smooth_background.green >= 1.0f && smooth_background.blue >= 1.0f)
+            {
+                smooth_background_delta.red = 0;
+                smooth_background_delta.green = -0.1;
+                smooth_background_delta.blue = 0;
+            }
+
+            if(smooth_background.red <= 0 && smooth_background.green <= 0 && smooth_background.blue >= 1.0f)
+            {
+                smooth_background_delta.red = 0.1;
+                smooth_background_delta.green = 0;
+                smooth_background_delta.blue = 0;
+            }
+
+            if(smooth_background.red >= 1.0f && smooth_background.green <= 0 && smooth_background.blue >= 1.0f)
+            {
+                smooth_background_delta.red = 0;
+                smooth_background_delta.green = 0;
+                smooth_background_delta.blue = -0.1;
+            }
+
+            // DEBUG COLOR END
+
+            glClearColor(smooth_background.red, smooth_background.green, smooth_background.blue, smooth_background.alpha);
+
             glClear(GL_COLOR_BUFFER_BIT);
 
             if (vertical_sync)
@@ -679,7 +740,7 @@ void CGUIMainWindow::key_callback(GLFWwindow* window, int key, int scan_code, in
                         glfwGetWindowSize(main_window_handler->main_window, &window_size.x, &window_size.y);
                         glfwGetCursorPos(main_window_handler->main_window, &local_mouse_position.x, &local_mouse_position.y);
                         global_mouse_position = main_window_handler->get_global_mouse_position(main_window_handler->main_window);
-                        
+
                         main_window_handler->debug_handler.post_log(__CGUI_OBF__(""), DEBUG_MODE_NONE);
                         main_window_handler->debug_handler.post_log("/ DEBUG INFO START", DEBUG_MODE_MESSAGE);
                         main_window_handler->debug_handler.post_log(std::string(__CGUI_OBF__("| Time passed since program started: ") + std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - main_window_handler->program_start_time).count()) + __CGUI_OBF__("ms")), DEBUG_MODE_NONE);

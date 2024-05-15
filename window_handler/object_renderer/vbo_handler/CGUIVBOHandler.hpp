@@ -44,7 +44,7 @@ struct CGUIVertex
     glm::fvec3 normal;
     glm::fvec4 color;
     glm::fvec2 uv_position;
-    glm::fvec1 texture_id;
+    glm::ivec1 texture_id;
 };
 
 struct CGUIObject
