@@ -7,10 +7,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_library(object_renderer STATIC CGUIObjectRenderer.cpp CGUIObjectRenderer.hpp)
 
+include_directories(${PROJECT_SOURCE_DIR}/external/glad/include)
+
 target_include_directories(object_renderer PUBLIC vbo_handler/ vao_handler/
 	ebo_handler/)
 
 target_link_directories(object_renderer PUBLIC vbo_handler/ vao_handler/
-	ebo_handler/)
+	ebo_handler/ )
 
 target_link_libraries(object_renderer vbo_handler vao_handler ebo_handler glm)

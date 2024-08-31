@@ -235,7 +235,7 @@ bool CGUIMainWindow::initialize(std::string main_window_name_arg, bool vertical_
 
     glfwMakeContextCurrent(main_window);
 
-    if (!gladLoadGL(glfwGetProcAddress))
+    if (!gladLoadGL())
     {
         debug_handler.post_log(__CGUI_OBF__("Unable to properly initialize GLAD."), DEBUG_MODE_ERROR);
         return false;
