@@ -15,27 +15,6 @@ set(CMAKE_UPX_COMPRESS ON)
 
 include(cmake/platform/generic_builder.cmake)
 
-
-
-
-
-if(APPLE)
-	set(ICON_NAME "icon.icns")
-	set(ICON_PATH ${PROJECT_SOURCE_DIR}/resources/icons/macos/${ICON_NAME})
-
-	set(VS_SHADER_NAME "cgui_tri_vert.vs")
-	set(VS_SHADER_PATH ${PROJECT_SOURCE_DIR}/resources/${VS_SHADER_NAME})
-
-	set(FS_SHADER_NAME "cgui_tri_frag.fs")
-	set(FS_SHADER_PATH ${PROJECT_SOURCE_DIR}/resources/${FS_SHADER_NAME})
-
-	set(GS_SHADER_NAME "cgui_tri_geom.gs")
-	set(GS_SHADER_PATH ${PROJECT_SOURCE_DIR}/resources/${GS_SHADER_NAME})
-elseif(UNIX)
-
-endif()
-
-
 #if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 #	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden -fsanitize=leak -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -Werror -Wno-unused -Ofast")
 #elseif(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
@@ -51,45 +30,3 @@ endif()
 #		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /Zi")
 #	endif()
 #endif()
-
-if(TEST)
-if(APPLE)
-	set_source_files_properties(${ICON_PATH} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
-	file(COPY ${ICON_PATH} DESTINATION "${PROJECT_NAME}.app/Contents/Resources")
-	file(COPY ${VS_SHADER_PATH} DESTINATION "${PROJECT_NAME}.app/Contents/Resources")
-	file(COPY ${FS_SHADER_PATH} DESTINATION "${PROJECT_NAME}.app/Contents/Resources")
-	file(COPY ${GS_SHADER_PATH} DESTINATION "${PROJECT_NAME}.app/Contents/Resources")
-
-	add_executable(${PROJECT_NAME} MACOSX_BUNDLE ${ICON_PATH} main.cpp) # Create target build for MACOSX_BUNDLE excutable
-	set_target_properties(${PROJECT_NAME} PROPERTIES
-		BUNDLE True
-	    MACOSX_BUNDLE_GUI_IDENTIFIER choodick.com.${PROJECT_NAME}
-	    MACOSX_BUNDLE_BUNDLE_NAME ${PROJECT_NAME}
-	    MACOSX_BUNDLE_BUNDLE_VERSION "0.1"
-	    MACOSX_BUNDLE_SHORT_VERSION_STRING "0.1"
-	    MACOSX_BUNDLE_ICONFILE ${ICON_NAME}
-	)
-elseif(UNIX)
-
-elseif(WIN32)
-	set_source_files_properties(${PROJECT_SOURCE_DIR}/resources/resources.rc LANGUAGE RC)
-
-	if(MINGW)
-        set(CMAKE_RC_COMPILER_INIT windres)
-        ENABLE_LANGUAGE(RC)
-        SET(CMAKE_RC_COMPILE_OBJECT
-        "<CMAKE_RC_COMPILER> <FLAGS> <DEFINES> -o <OBJECT> <SOURCE>")
-        set(RC_CFLAGS "-DMINGW -Ocoff")
-
-        # If any sort of debugging is being enabled, add a _DEBUG define to the flags for the resource compiler
-        #if(CMAKE_BUILD_TYPE STREQUAL "DEBUG" OR CMAKE_BUILD_TYPE STREQUAL "RELWITHDEBINFO")
-        #   set(RC_CFLAGS "${RC_CFLAGS} -D_DEBUG")
-        #endif(CMAKE_BUILD_TYPE STREQUAL "DEBUG" OR CMAKE_BUILD_TYPE STREQUAL "RELWITHDEBINFO")
-        set_source_files_properties(${PROJECT_SOURCE_DIR}/resources/resources.rc COMPILE_FLAGS "${RC_CFLAGS}")
-        set(APP_ICON_RESOURCE_WINDOWS ${PROJECT_SOURCE_DIR}/resources/resources.rc)
-    endif(MINGW)
-
-	add_executable(${PROJECT_NAME} WIN32 main.cpp ${APP_ICON_RESOURCE_WINDOWS}) # Create target build for WIN32 excutable
-endif()
-
-endif()

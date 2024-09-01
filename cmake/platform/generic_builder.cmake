@@ -16,11 +16,11 @@ else()
     message(FATAL_ERROR "Unsupported OS: ${CMAKE_SYSTEM_NAME}")
 endif()
 
-add_subdirectory(window_handler) # Add widnow_handler sub directory in order to load library
+add_subdirectory(window_handler)
 
-target_include_directories(${PROJECT_NAME} PUBLIC window_handler/) # Link include directory
-target_link_directories(${PROJECT_NAME} PUBLIC window_handler/) # Link directories for libraries
-target_link_libraries(${PROJECT_NAME} window_handler) # Link libraries to the project
+target_include_directories(${PROJECT_NAME} PUBLIC window_handler/)
+target_link_directories(${PROJECT_NAME} PUBLIC window_handler/)
+target_link_libraries(${PROJECT_NAME} window_handler)
 
 if(CMAKE_RELEASE AND CMAKE_UPX_COMPRESS)
 	message(STATUS "Stripping with ${CMAKE_STRIP}")

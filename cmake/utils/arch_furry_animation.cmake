@@ -62,6 +62,8 @@ set(ANSI_UNSET_STRIKEOUT_MODE "${ESC}[29m")
 set(ANSI_ENABLE_PRINT_MODE     "${ESC}[5i")
 set(ANSI_DISABLE_PRINT_MODE    "${ESC}[4i")
 
+set(LAST_FRAME_WIDTH 0)
+
 # Function to get terminal width
 function(get_terminal_width RETURN_VALUE)
     execute_process(
@@ -80,44 +82,93 @@ function(get_terminal_width RETURN_VALUE)
     set(${RETURN_VALUE} "${OUTPUT}" PARENT_SCOPE)
 endfunction()
 
-function(draw_animation repeat delay)
+function(calculate_line_width CONTENTS RETURN_VALUE)
+    execute_process(
+        COMMAND bash -c "
+        echo \"${CONTENTS}\" | awk '{
+            gsub(/\\x1b\[[0-9;]*m/, \"\");
+            if (length > max_length) max_length = length
+        } END { print max_length }'
+        "
+        OUTPUT_VARIABLE OUTPUT
+        ERROR_QUIET
+    )
+
+    set(${RETURN_VALUE} "${OUTPUT}" PARENT_SCOPE)
+endfunction()
+
+function(calculate_left_offset TERMINAL_WIDTH LINE_WIDTH RETURN_VALUE)
+    math(EXPR OFFSET "(${TERMINAL_WIDTH} - ${LINE_WIDTH}) / 2")
+    set(${RETURN_VALUE} "${OFFSET}" PARENT_SCOPE)
+endfunction()
+
+function(draw_animation_frame ANSI_FILE)
+    get_terminal_width(TERMINAL_WIDTH)
+
+    if(NOT LAST_FRAME_WIDTH EQUAL TERMINAL_WIDTH)
+        set(LAST_FRAME_WIDTH ${TERMINAL_WIDTH} PARENT_SCOPE)
+        message("${ANSI_ERASE_FULL_DISPLAY}")
+    endif()
+    message("${ANSI_HOME}${ANSI_DISPLAY_MM_MODE}")
+
+    file(READ ${ANSI_FILE} CONTENTS)
+    execute_process(
+        COMMAND bash -c "
+        while IFS= read -r line; do
+            echo -e \"\$line\"
+        done <<< \"${CONTENTS}\""
+        OUTPUT_VARIABLE RESULT
+        ERROR_QUIET
+    )
+
+    set(TEXT_TOP "You like compiling C++")
+    calculate_line_width("${TEXT_TOP}" TEXT_TOP_WIDTH)
+    calculate_left_offset(${TERMINAL_WIDTH} ${TEXT_TOP_WIDTH} TEXT_TOP_LEFT_OFFSET)
+    message("${ANSI_CURSOR_LEFT}${ANSI_CURSOR_UP}${ESC}[${TEXT_TOP_LEFT_OFFSET}C${TEXT_TOP}")
+
+    set(TEXT_BOTTOM "don't you?")
+    calculate_line_width("${TEXT_BOTTOM}" TEXT_BOTTOM_WIDTH)
+    calculate_left_offset(${TERMINAL_WIDTH} ${TEXT_BOTTOM_WIDTH} TEXT_BOTTOM_LEFT_OFFSET)
+    message("${ESC}[${TEXT_BOTTOM_LEFT_OFFSET}C${TEXT_BOTTOM}")
+
+    calculate_line_width("${RESULT}" IMAGE_WIDTH)
+    calculate_left_offset(${TERMINAL_WIDTH} ${IMAGE_WIDTH} IMAGE_LEFT_OFFSET)
+    execute_process(
+        COMMAND bash -c "
+        while IFS= read -r line; do
+            echo -e \"${ESC}[${IMAGE_LEFT_OFFSET}C\$line\"
+        done <<< \"${RESULT}\""
+        OUTPUT_VARIABLE RESULT
+        ERROR_QUIET
+    )
+    message("${RESULT}")
+
+endfunction()
+
+function(draw_animation REPEAT DELAY)
     set(ANSI_FILES_DIR "${CMAKE_SOURCE_DIR}/cmake/utils/animation")
     file(GLOB ANSI_FILES "${ANSI_FILES_DIR}/*.ansi")
 
-    if(NOT delay)
-        set(delay 0.5)
+    if(NOT DELAY)
+        set(DELAY 0.5)
     endif()
 
-    if(NOT repeat)
-        set(repeat 1)
+    if(NOT REPEAT)
+        set(REPEAT 1)
     endif()
     message("${ANSI_ERASE_FULL_DISPLAY}")
 
-    # Main loop for animation repeat
-    math(EXPR repeat_count "${repeat} - 1")
-    while(repeat_count GREATER_EQUAL 0)
+    math(EXPR REPEAT_COUNT "${REPEAT} - 1")
+    while(REPEAT_COUNT GREATER_EQUAL 0)
         foreach(ANSI_FILE ${ANSI_FILES})
-            file(READ ${ANSI_FILE} CONTENTS)
-            message("${ANSI_HOME}${ANSI_DISPLAY_MM_MODE}")
-            execute_process(
-                COMMAND bash -c "echo -e '${CONTENTS}'"
-                OUTPUT_VARIABLE RESULT
-                ERROR_QUIET
-            )
-            message("${ANSI_CURSOR_LEFT}${ANSI_CURSOR_UP}${ESC}[20CYou like compiling C++")
-            message("${ESC}[26Cdon't you?")
-            message("${RESULT}")
-            execute_process(COMMAND sleep ${delay})
+            draw_animation_frame(${ANSI_FILE})
+            execute_process(COMMAND sleep ${DELAY})
         endforeach()
 
-        math(EXPR repeat_count "${repeat_count} - 1")
+        math(EXPR REPEAT_COUNT "${REPEAT_COUNT} - 1")
     endwhile()
 endfunction()
 
-
-#get_terminal_width(TERMINAL_WIDTH)
-#message(STATUS "Terminal width: ${TERMINAL_WIDTH}")
-
-draw_animation(3 0.1)
+draw_animation(10 0.1)
 message("${ANSI_ERASE_FULL_DISPLAY}${ANSI_HOME}${ANSI_DISPLAY_MM_MODE}")
 
